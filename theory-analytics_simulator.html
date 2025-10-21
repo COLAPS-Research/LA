@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Learning Theory Analytics Simulator</title>
+
+  <!-- Tailwind (CDN quick-use) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide icons (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.268.0/dist/lucide.min.js"></script>
+
+  <style>
+    /* Small visual adjustments */
+    body { background: #f8fafc; }
+    .card { transition: all .15s ease; }
+    .card:active { transform: translateY(1px); }
+  </style>
+</head>
+<body class="antialiased text-gray-800">
+
+  <div class="max-w-6xl mx-auto p-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">
+        Learning Theory Analytics Simulator
+      </h1>
+      <p class="text-gray-600 mb-4">
+        Understanding Photosynthesis: How Different Theories Analyze the Same Student Actions
+      </p>
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <p class="text-sm text-blue-900">
+          <strong>Instructions:</strong> Select a learning theory, then choose a student action to see how that theory would analyze and interpret the learning evidence.
+        </p>
+      </div>
+    </div>
+
+    <!-- Theory selection -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">Step 1: Select Learning Theory</h2>
+      <div id="theoriesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+      <div id="currentTheoryPanel" class="mt-6 p-4 bg-gray-50 rounded-lg border-l-4 border-blue-500 hidden">
+        <div class="flex items-start gap-3">
+          <div id="currentIcon" class="w-6 h-6 text-blue-600 mt-1"></div>
+          <div>
+            <h3 id="currentTheoryName" class="font-bold text-gray-800 mb-1"></h3>
+            <p id="currentTheoryFocus" class="text-sm text-gray-700"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student action selection -->
+    <div id="actionsCard" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">Step 2: Select Student Action</h2>
+      <p class="text-gray-600 mb-4">All actions show learning about photosynthesis. See how your chosen theory interprets each one!</p>
+      <div id="actionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- Analytics panel -->
+    <div id="analyticsCard" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden"></div>
+
+    <!-- Key insight -->
+    <div id="insightCard" class="bg-white rounded-lg shadow-lg p-6 hidden">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">💡 Key Insight</h2>
+      <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+        <p class="text-gray-800 mb-3">
+          <strong>The same student action receives dramatically different interpretations depending on your theoretical lens!</strong>
+        </p>
+        <ul class="text-gray-700 text-sm space-y-2">
+          <li>• Behaviorism focuses on observable completions and frequencies</li>
+          <li>• Cognitivism seeks evidence of mental processes and understanding</li>
+          <li>• Constructivism values authentic creation and collaboration</li>
+          <li>• Social Constructivism emphasizes learning through social interaction and cultural tools</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Data (copied / adapted from your React component) ----------
+    const theories = {
+      behaviorism: {
+        key: 'behaviorism',
+        name: 'Behaviorism',
+        icon: 'book-open',
+        color: 'bg-blue-500',
+        borderColor: 'border-blue-500',
+        description: 'Learning is observable change in behavior through reinforcement',
+        focus: 'Observable actions and correct responses'
+      },
+      cognitivism: {
+        key: 'cognitivism',
+        name: 'Cognitivism',
+        icon: 'brain',
+        color: 'bg-purple-500',
+        borderColor: 'border-purple-500',
+        description: 'Learning is mental processing and understanding',
+        focus: 'Thought processes and problem-solving strategies'
+      },
+      constructivism: {
+        key: 'constructivism',
+        name: 'Constructivism',
+        icon: 'users',
+        color: 'bg-green-500',
+        borderColor: 'border-green-500',
+        description: 'Learning is active construction of meaning',
+        focus: 'Authentic creation and collaboration'
+      },
+      socialconstructivism: {
+        key: 'socialconstructivism',
+        name: 'Social Constructivism',
+        icon: 'network',
+        color: 'bg-orange-500',
+        borderColor: 'border-orange-500',
+        description: 'Learning is socially constructed through interaction and culture',
+        focus: 'Social interaction, dialogue, and cultural tools'
+      }
+    };
+
+    const studentActions = {
+      quiz: {
+        name: 'Completed Quiz',
+        description: 'Student scored 9/10 on photosynthesis multiple choice quiz',
+        icon: 'check-circle'
+      },
+      experiment: {
+        name: 'Designed Experiment',
+        description: 'Student designed and conducted photosynthesis experiment in their garden',
+        icon: 'alert-circle'
+      },
+      discussion: {
+        name: 'Led Discussion',
+        description: 'Student facilitated peer discussion, explaining photosynthesis to classmates',
+        icon: 'users'
+      },
+      research: {
+        name: 'Curated Resources',
+        description: 'Student collected 15 diverse resources about photosynthesis from journals, videos, and blogs',
+        icon: 'network'
+      },
+      problem: {
+        name: 'Solved Novel Problem',
+        description: 'Student correctly explained why plants in shade grow differently than in sun',
+        icon: 'brain'
+      }
+    };
+
+    const analytics = {
+      behaviorism: {
+        quiz: {
+          verdict: 'success',
+          title: 'Strong Evidence of Learning',
+          metrics: [
+            { label: 'Quiz Score', value: '90%', status: 'success' },
+            { label: 'Completion Time', value: '8 minutes', status: 'success' },
+            { label: 'First Attempt', value: 'Yes', status: 'success' },
+            { label: 'Time on Study Materials', value: '47 minutes', status: 'success' }
+          ],
+          interpretation: 'Student demonstrates mastery through high quiz performance. Observable behavior change confirms learning occurred.',
+          intervention: 'Continue current approach. Offer advanced material on related topics.',
+          dataNeeded: ['Quiz scores', 'Completion rates', 'Time on task', 'Attempt counts'],
+          limitations: 'Cannot determine if student truly understands or just memorized. May not transfer to novel situations.'
+        },
+        experiment: {
+          verdict: 'partial',
+          title: 'Limited Observable Evidence',
+          metrics: [
+            { label: 'Experiment Completion', value: 'Yes', status: 'success' },
+            { label: 'Report Submitted', value: 'Yes', status: 'success' },
+            { label: 'On Time', value: 'Yes', status: 'success' },
+            { label: 'Follows Rubric', value: '85%', status: 'success' }
+          ],
+          interpretation: 'Student completed required task. Observable behaviors meet expectations, though quality of understanding unclear from behavior alone.',
+          intervention: 'Student meets requirements. Consider quiz to verify knowledge retention.',
+          dataNeeded: ['Completion status', 'Submission timing', 'Rubric compliance'],
+          limitations: 'Misses the depth of understanding shown through experimental design. Treats complex learning as simple completion.'
+        },
+        discussion: {
+          verdict: 'partial',
+          title: 'Participation Observed',
+          metrics: [
+            { label: 'Discussion Posts', value: '8 posts', status: 'success' },
+            { label: 'Words Written', value: '450 words', status: 'success' },
+            { label: 'Peers Responded To', value: '5 students', status: 'success' },
+            { label: 'Session Duration', value: '35 minutes', status: 'success' }
+          ],
+          interpretation: 'Active participation observed. Student engaged in discussion activities as measured by post frequency and length.',
+          intervention: 'Maintain participation level. Consider incentives for increased posting.',
+          dataNeeded: ['Post counts', 'Word counts', 'Reply counts', 'Time spent'],
+          limitations: 'Quantity does not equal quality. Eight superficial posts may show less learning than two deep explanations.'
+        },
+        research: {
+          verdict: 'warning',
+          title: 'Non-Standard Activity',
+          metrics: [
+            { label: 'Required Readings', value: '3/3', status: 'success' },
+            { label: 'External Resources', value: '15 sources', status: 'neutral' },
+            { label: 'Time Off-Platform', value: 'Unknown', status: 'warning' },
+            { label: 'Quiz Score', value: 'Not yet taken', status: 'warning' }
+          ],
+          interpretation: 'Student accessed external materials beyond requirements. Cannot verify if this represents learning without observable performance.',
+          intervention: 'Encourage student to complete required assessments to demonstrate learning.',
+          dataNeeded: ['Assessment scores', 'Required task completion', 'Time on assigned materials'],
+          limitations: 'Completely misses valuable self-directed learning. Broad research may indicate deep interest and learning.'
+        },
+        problem: {
+          verdict: 'success',
+          title: 'Transfer Demonstrated',
+          metrics: [
+            { label: 'Problem Solved', value: 'Correct', status: 'success' },
+            { label: 'Response Time', value: '4 minutes', status: 'success' },
+            { label: 'Attempts Needed', value: '1', status: 'success' },
+            { label: 'Used Hints', value: 'No', status: 'success' }
+          ],
+          interpretation: 'Student correctly solved novel problem on first attempt. This observable performance indicates learning and retention.',
+          intervention: 'Student ready for more challenging problems. Advance to next unit.',
+          dataNeeded: ['Correctness', 'Attempts', 'Time to solution', 'Help usage'],
+          limitations: 'Correct answer visible, but reasoning process hidden. Could be lucky guess or true understanding.'
+        }
+      },
+      cognitivism: {
+        quiz: {
+          verdict: 'partial',
+          title: 'Surface-Level Assessment',
+          metrics: [
+            { label: 'Conceptual Understanding', value: 'Unclear', status: 'warning' },
+            { label: 'Problem-Solving Strategy', value: 'Not assessed', status: 'warning' },
+            { label: 'Transfer Ability', value: 'Unknown', status: 'warning' },
+            { label: 'Metacognitive Awareness', value: 'Not measured', status: 'neutral' }
+          ],
+          interpretation: 'Multiple choice quiz reveals correct answers but not thought processes. Cannot determine if student truly understands concepts or memorized facts.',
+          intervention: 'Follow up with explanation task or novel problem to assess understanding depth.',
+          dataNeeded: ['Explanation quality', 'Problem-solving traces', 'Error patterns', 'Strategy use'],
+          limitations: 'Missing critical information about how student thinks about photosynthesis. Quiz format limits insight.'
+        },
+        experiment: {
+          verdict: 'partial',
+          title: 'Process Data Needed',
+          metrics: [
+            { label: 'Experimental Design', value: 'Present', status: 'success' },
+            { label: 'Hypothesis Quality', value: 'Need to assess', status: 'warning' },
+            { label: 'Variable Control', value: 'Need to assess', status: 'warning' },
+            { label: 'Results Interpretation', value: 'Need to assess', status: 'warning' }
+          ],
+          interpretation: 'Experiment completed but need to analyze quality of scientific thinking. Must assess hypothesis formation, variable control, and interpretation.',
+          intervention: 'Review experimental design and reasoning. Identify any misconceptions in approach.',
+          dataNeeded: ['Design decisions', 'Reasoning explanations', 'Hypothesis justification', 'Result interpretation'],
+          limitations: 'Without analyzing the actual experimental thinking, cannot fully assess cognitive development.'
+        },
+        discussion: {
+          verdict: 'partial',
+          title: 'Explanation Quality Unclear',
+          metrics: [
+            { label: 'Explanation Depth', value: 'Need analysis', status: 'warning' },
+            { label: 'Misconceptions', value: 'Need to check', status: 'warning' },
+            { label: 'Causal Reasoning', value: 'Need assessment', status: 'warning' },
+            { label: 'Analogies Used', value: 'Unknown quality', status: 'neutral' }
+          ],
+          interpretation: 'Student explained concepts to peers, but quality of explanations needs evaluation. Did explanations reveal deep or shallow understanding?',
+          intervention: 'Analyze discussion content for conceptual accuracy and depth. Address any identified misconceptions.',
+          dataNeeded: ['Explanation accuracy', 'Conceptual relationships', 'Reasoning quality', 'Misconception patterns'],
+          limitations: 'Leading discussion is promising but need to verify the quality of cognitive understanding shared.'
+        },
+        research: {
+          verdict: 'warning',
+          title: 'Processing Depth Unknown',
+          metrics: [
+            { label: 'Resource Processing', value: 'Unknown', status: 'warning' },
+            { label: 'Integration Quality', value: 'Not assessed', status: 'warning' },
+            { label: 'Critical Evaluation', value: 'Not measured', status: 'warning' },
+            { label: 'Schema Development', value: 'Cannot determine', status: 'warning' }
+          ],
+          interpretation: 'Student collected many resources but unclear if they deeply processed information or built coherent mental model.',
+          intervention: 'Ask student to explain how resources relate and integrate information to assess comprehension.',
+          dataNeeded: ['Synthesis quality', 'Source evaluation', 'Concept integration', 'Explanation depth'],
+          limitations: 'Collection without processing assessment tells us little about cognitive understanding.'
+        },
+        problem: {
+          verdict: 'success',
+          title: 'Strong Cognitive Evidence',
+          metrics: [
+            { label: 'Correct Reasoning', value: 'Yes', status: 'success' },
+            { label: 'Transfer Demonstrated', value: 'Novel context', status: 'success' },
+            { label: 'Causal Understanding', value: 'Accurate', status: 'success' },
+            { label: 'Strategy Quality', value: 'Systematic', status: 'success' }
+          ],
+          interpretation: 'Student successfully transferred knowledge to novel situation with correct causal reasoning. This indicates robust mental model of photosynthesis.',
+          intervention: 'Student shows strong understanding. Introduce more complex scenarios requiring integration.',
+          dataNeeded: ['Solution paths', 'Reasoning explanations', 'Transfer contexts', 'Strategy analysis'],
+          limitations: 'Single problem may not reveal full depth. Need multiple contexts to verify robust understanding.'
+        }
+      },
+      constructivism: {
+        quiz: {
+          verdict: 'warning',
+          title: 'Decontextualized Assessment',
+          metrics: [
+            { label: 'Personal Meaning', value: 'Not assessed', status: 'warning' },
+            { label: 'Authentic Context', value: 'No', status: 'warning' },
+            { label: 'Collaboration', value: 'None', status: 'warning' },
+            { label: 'Real-World Connection', value: 'Minimal', status: 'neutral' }
+          ],
+          interpretation: 'Quiz measures recall but not meaningful understanding or application. Misses whether student constructed personal, actionable knowledge.',
+          intervention: 'Supplement with authentic task requiring application to personal context.',
+          dataNeeded: ['Artifact quality', 'Real-world application', 'Collaboration patterns', 'Meaning-making processes'],
+          limitations: 'Quiz format fundamentally misaligned with constructivist values. Provides minimal insight into constructed understanding.'
+        },
+        experiment: {
+          verdict: 'success',
+          title: 'Excellent Authentic Learning',
+          metrics: [
+            { label: 'Authentic Context', value: 'Own garden', status: 'success' },
+            { label: 'Personal Meaning', value: 'High relevance', status: 'success' },
+            { label: 'Active Construction', value: 'Designed experiment', status: 'success' },
+            { label: 'Iterative Refinement', value: 'Need to assess', status: 'neutral' }
+          ],
+          interpretation: 'Student actively constructed knowledge through authentic, personally meaningful investigation. This represents deep constructivist learning.',
+          intervention: 'Facilitate sharing of findings with peers. Encourage reflection on learning process.',
+          dataNeeded: ['Design iterations', 'Peer collaboration', 'Reflection quality', 'Connection to prior knowledge'],
+          limitations: 'May be working in isolation. Constructivism values social learning—check for peer engagement.'
+        },
+        discussion: {
+          verdict: 'success',
+          title: 'Rich Collaborative Learning',
+          metrics: [
+            { label: 'Knowledge Co-Construction', value: 'Facilitating', status: 'success' },
+            { label: 'Peer Support', value: 'Active teaching', status: 'success' },
+            { label: 'Dialogue Quality', value: 'Need analysis', status: 'neutral' },
+            { label: 'Multiple Perspectives', value: 'Engaging', status: 'success' }
+          ],
+          interpretation: 'Student engaged in social knowledge construction by facilitating peer learning. This collaborative meaning-making is central to constructivist learning.',
+          intervention: 'Analyze discussion quality. Support deeper questioning and perspective-taking.',
+          dataNeeded: ['Discourse quality', 'Turn-taking patterns', 'Idea building', 'Perspective integration'],
+          limitations: 'Need to ensure discussion depth, not just social activity. Quality matters over quantity.'
+        },
+        research: {
+          verdict: 'partial',
+          title: 'Resource Collection, Not Construction',
+          metrics: [
+            { label: 'Active Construction', value: 'Unclear', status: 'warning' },
+            { label: 'Personal Synthesis', value: 'Need to assess', status: 'warning' },
+            { label: 'Sharing with Others', value: 'Unknown', status: 'warning' },
+            { label: 'Practical Application', value: 'Not evident', status: 'neutral' }
+          ],
+          interpretation: 'Curating resources is passive. Need evidence of active construction—did student synthesize, apply, or share?',
+          intervention: 'Ask student to create something with these resources: project, explanation, or application.',
+          dataNeeded: ['Creation artifacts', 'Synthesis products', 'Application evidence', 'Collaboration on findings'],
+          limitations: 'Collection alone is insufficient. Constructivism requires active building of knowledge.'
+        },
+        problem: {
+          verdict: 'partial',
+          title: 'Individual Not Collaborative',
+          metrics: [
+            { label: 'Problem Relevance', value: 'Moderate', status: 'neutral' },
+            { label: 'Collaborative Solving', value: 'No', status: 'warning' },
+            { label: 'Real-World Context', value: 'Somewhat', status: 'neutral' },
+            { label: 'Peer Dialogue', value: 'None', status: 'warning' }
+          ],
+          interpretation: 'Individual problem-solving shows understanding but lacks collaborative construction. Constructivism values social learning and dialogue.',
+          intervention: 'Provide opportunities for collaborative problem-solving and peer explanation.',
+          dataNeeded: ['Group problem-solving', 'Peer teaching', 'Collaborative artifacts', 'Discussion quality'],
+          limitations: 'Individualized assessment misaligned with social constructivism. Missing collaborative dimension.'
+        }
+      },
+      socialconstructivism: {
+        quiz: {
+          verdict: 'warning',
+          title: 'Isolated Assessment',
+          metrics: [
+            { label: 'Social Interaction', value: 'None', status: 'warning' },
+            { label: 'Dialogue Opportunity', value: 'No', status: 'warning' },
+            { label: 'Cultural Tools Used', value: 'Minimal', status: 'warning' },
+            { label: 'Peer Learning', value: 'Not present', status: 'warning' }
+          ],
+          interpretation: 'Quiz is an isolated individual activity that does not leverage social interaction or cultural tools. Misses the opportunity for learning through dialogue and negotiation of meaning.',
+          intervention: 'Follow up with group discussion where students explain their reasoning and negotiate understanding together.',
+          dataNeeded: ['Dialogue quality', 'Peer explanations', 'Social negotiation', 'Cultural tool use'],
+          limitations: 'Individual quiz fundamentally opposes social constructivist values. Learning through social interaction is absent.'
+        },
+        experiment: {
+          verdict: 'partial',
+          title: 'Potential for Social Learning',
+          metrics: [
+            { label: 'Collaboration', value: 'Need to assess', status: 'warning' },
+            { label: 'Expert Guidance', value: 'Unknown', status: 'warning' },
+            { label: 'Cultural Tools', value: 'Scientific method', status: 'success' },
+            { label: 'Peer Dialogue', value: 'Not evident', status: 'warning' }
+          ],
+          interpretation: 'Garden experiment uses cultural tools (scientific method) but appears to be individual work. Social constructivism emphasizes learning through guidance and collaboration.',
+          intervention: 'Pair student with more knowledgeable peer or mentor. Create opportunities for dialogue about experimental design and findings.',
+          dataNeeded: ['Mentor interactions', 'Peer collaboration', 'Dialogue transcripts', 'Zone of proximal development'],
+          limitations: 'Without evidence of social interaction or expert scaffolding, cannot assess social construction of knowledge.'
+        },
+        discussion: {
+          verdict: 'success',
+          title: 'Exemplary Social Learning',
+          metrics: [
+            { label: 'Peer Dialogue', value: 'Facilitating', status: 'success' },
+            { label: 'Knowledge Negotiation', value: 'Active', status: 'success' },
+            { label: 'Cultural Tools', value: 'Language, concepts', status: 'success' },
+            { label: 'Scaffolding Others', value: 'Yes', status: 'success' }
+          ],
+          interpretation: 'Student engaged in rich social interaction, using language as cultural tool to co-construct understanding. Facilitating peers represents the essence of social constructivism.',
+          intervention: 'Document types of scaffolding used. Analyze how student supports peers in their zones of proximal development.',
+          dataNeeded: ['Scaffolding strategies', 'Dialogue moves', 'Conceptual negotiation', 'Peer support quality'],
+          limitations: 'Excellent for social constructivism but need to ensure all students have opportunities to be both learner and teacher.'
+        },
+        research: {
+          verdict: 'warning',
+          title: 'Individual Not Social Activity',
+          metrics: [
+            { label: 'Collaborative Research', value: 'No', status: 'warning' },
+            { label: 'Expert Interaction', value: 'None evident', status: 'warning' },
+            { label: 'Peer Dialogue', value: 'Not present', status: 'warning' },
+            { label: 'Cultural Mediation', value: 'Unclear', status: 'neutral' }
+          ],
+          interpretation: 'Resource collection appears to be solitary activity. Social constructivism emphasizes that learning happens through social interaction and cultural mediation, not individual accumulation.',
+          intervention: 'Transform into social activity: research team, expert consultation, peer sharing and discussion of findings.',
+          dataNeeded: ['Collaborative work patterns', 'Expert guidance', 'Peer discussion', 'Social meaning-making'],
+          limitations: 'Individual curation misses the social dimension. Learning is fundamentally social, not isolated.'
+        },
+        problem: {
+          verdict: 'partial',
+          title: 'Missing Social Dimension',
+          metrics: [
+            { label: 'Collaborative Solving', value: 'No', status: 'warning' },
+            { label: 'Peer Dialogue', value: 'None', status: 'warning' },
+            { label: 'Expert Scaffolding', value: 'Not evident', status: 'warning' },
+            { label: 'Cultural Tools', value: 'Used', status: 'success' }
+          ],
+          interpretation: 'Student used cultural tools (scientific concepts, language) but solved problem individually. Social constructivism values collaborative problem-solving with scaffolding.',
+          intervention: 'Engage student in collaborative problem-solving. Pair with peers at different skill levels for mutual scaffolding.',
+          dataNeeded: ['Peer collaboration', 'Scaffolding exchanges', 'Dialogue during solving', 'Zone of proximal development'],
+          limitations: 'Individual problem-solving ignores that understanding develops through social negotiation and dialogue.'
+        }
+      }
+    };
+
+    // ---------- State ----------
+    let selectedTheoryKey = 'behaviorism';
+    let selectedActionKey = null;
+
+    // ---------- Helpers ----------
+    function getStatusColorClass(status) {
+      switch (status) {
+        case 'success': return 'text-green-600';
+        case 'warning': return 'text-yellow-600';
+        case 'neutral': return 'text-gray-600';
+        default: return 'text-gray-600';
+      }
+    }
+    function getVerdictClasses(verdict) {
+      switch (verdict) {
+        case 'success': return 'bg-green-100 border-green-500 text-green-900';
+        case 'partial': return 'bg-yellow-100 border-yellow-500 text-yellow-900';
+        case 'warning': return 'bg-red-100 border-red-500 text-red-900';
+        default: return 'bg-gray-100 border-gray-500 text-gray-900';
+      }
+    }
+
+    // ---------- DOM refs ----------
+    const theoriesGrid = document.getElementById('theoriesGrid');
+    const currentTheoryPanel = document.getElementById('currentTheoryPanel');
+    const currentTheoryName = document.getElementById('currentTheoryName');
+    const currentTheoryFocus = document.getElementById('currentTheoryFocus');
+    const currentIcon = document.getElementById('currentIcon');
+
+    const actionsCard = document.getElementById('actionsCard');
+    const actionsGrid = document.getElementById('actionsGrid');
+
+    const analyticsCard = document.getElementById('analyticsCard');
+    const insightCard = document.getElementById('insightCard');
+
+    // ---------- Render functions ----------
+    function renderTheories() {
+      theoriesGrid.innerHTML = '';
+      Object.values(theories).forEach(t => {
+        const isSelected = selectedTheoryKey === t.key;
+        const btn = document.createElement('button');
+        btn.className = `card p-4 rounded-lg border-2 text-left transition-all ${isSelected ? t.borderColor + ' bg-gray-50' : 'border-gray-200 hover:border-gray-400'}`;
+        btn.innerHTML = `
+          <div class="flex items-center justify-center mb-2">
+            <div class="${t.color} p-3 rounded-full">
+              <i data-lucide="${t.icon}" class="w-6 h-6 text-white"></i>
+            </div>
+          </div>
+          <h3 class="font-bold text-gray-800 mb-1">${t.name}</h3>
+          <p class="text-xs text-gray-600">${t.description}</p>
+        `;
+        btn.addEventListener('click', () => {
+          selectedTheoryKey = t.key;
+          selectedActionKey = null;
+          renderTheories();
+          renderCurrentTheory();
+          renderActions();
+          renderAnalytics(); // hide
+        });
+        theoriesGrid.appendChild(btn);
+      });
+      // re-create lucide icons
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderCurrentTheory() {
+      const t = theories[selectedTheoryKey];
+      if (!t) {
+        currentTheoryPanel.classList.add('hidden');
+        return;
+      }
+      currentTheoryPanel.classList.remove('hidden');
+      currentTheoryName.textContent = t.name + ' Perspective';
+      currentTheoryFocus.textContent = `Focus: ${t.focus}`;
+      currentIcon.innerHTML = `<i data-lucide="${t.icon}"></i>`;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderActions() {
+      actionsGrid.innerHTML = '';
+      actionsCard.classList.remove('hidden');
+      Object.entries(studentActions).forEach(([key, a]) => {
+        const isSelected = selectedActionKey === key;
+        const btn = document.createElement('button');
+        btn.className = `card p-4 rounded-lg border-2 text-left transition-all ${isSelected ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-gray-400'}`;
+        btn.innerHTML = `
+          <div class="flex items-center gap-3 mb-2">
+            <i data-lucide="${a.icon}" class="w-5 h-5 ${isSelected ? 'text-purple-600' : 'text-gray-600'}"></i>
+            <h3 class="font-bold text-gray-800">${a.name}</h3>
+          </div>
+          <p class="text-sm text-gray-600">${a.description}</p>
+        `;
+        btn.addEventListener('click', () => {
+          selectedActionKey = key;
+          renderActions();
+          renderAnalytics();
+        });
+        actionsGrid.appendChild(btn);
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderAnalytics() {
+      analyticsCard.innerHTML = '';
+      insightCard.classList.add('hidden');
+      if (!selectedActionKey) {
+        analyticsCard.classList.add('hidden');
+        insightCard.classList.add('hidden');
+        return;
+      }
+      const tKey = selectedTheoryKey;
+      const aKey = selectedActionKey;
+      const currentAnalytics = analytics[tKey] && analytics[tKey][aKey] ? analytics[tKey][aKey] : null;
+
+      if (!currentAnalytics) {
+        analyticsCard.classList.add('hidden');
+        return;
+      }
+
+      const currentTheory = theories[tKey];
+      const action = studentActions[aKey];
+
+      analyticsCard.classList.remove('hidden');
+      analyticsCard.innerHTML = `
+        <div class="flex items-center gap-3 mb-6">
+          <i data-lucide="bar-chart-3" class="w-8 h-8 text-gray-700"></i>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-800">${currentTheory.name} Analytics</h2>
+            <p class="text-gray-600">Analysis of: ${action.name}</p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-lg border-2 mb-6 ${getVerdictClasses(currentAnalytics.verdict)}">
+          <h3 class="font-bold text-lg mb-1">${currentAnalytics.title}</h3>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-bold text-gray-800 mb-3">Measured Metrics:</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="metricsGrid"></div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-bold text-gray-800 mb-2">Interpretation:</h3>
+          <p class="text-gray-700 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+            ${escapeHtml(currentAnalytics.interpretation)}
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-bold text-gray-800 mb-2">Recommended Intervention:</h3>
+          <p class="text-gray-700 bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+            ${escapeHtml(currentAnalytics.intervention)}
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-bold text-gray-800 mb-2">Data Collection Needed:</h3>
+          <div class="flex flex-wrap gap-2" id="dataNeededWrap"></div>
+        </div>
+
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+          <h3 class="font-bold text-red-900 mb-2">Theoretical Limitations:</h3>
+          <p class="text-red-800 text-sm">${escapeHtml(currentAnalytics.limitations)}</p>
+        </div>
+      `;
+
+      // Fill metrics
+      const metricsGrid = document.getElementById('metricsGrid');
+      currentAnalytics.metrics.forEach(metric => {
+        const div = document.createElement('div');
+        div.className = 'p-3 bg-gray-50 rounded-lg border border-gray-200';
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-gray-700">${escapeHtml(metric.label)}</span>
+            <span class="text-sm font-bold ${getStatusColorClass(metric.status)}">${escapeHtml(metric.value)}</span>
+          </div>
+        `;
+        metricsGrid.appendChild(div);
+      });
+
+      // Fill data needed
+      const dataWrap = document.getElementById('dataNeededWrap');
+      currentAnalytics.dataNeeded.forEach(d => {
+        const span = document.createElement('span');
+        span.className = 'px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm';
+        span.textContent = d;
+        dataWrap.appendChild(span);
+      });
+
+      if (window.lucide) lucide.createIcons();
+
+      // show the insight card too
+      insightCard.classList.remove('hidden');
+    }
+
+    // Escape helper for safety (we're using innerHTML in a few places)
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    // ---------- Initial render ----------
+    renderTheories();
+    renderCurrentTheory();
+    renderActions();
+
+    // Make sure lucide renders any remaining icons after DOM assembly
+    if (window.lucide) lucide.createIcons();
+  </script>
+
+</body>
+</html>
