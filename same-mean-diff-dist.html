@@ -1,0 +1,397 @@
+<!-- Interactive example on descriptive analysis created with Claude.ai -->
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Same Mean, Different Distributions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .histogram-bar {
+            transition: all 0.5s ease;
+        }
+        .histogram-bar:hover {
+            opacity: 0.8;
+        }
+        .tooltip {
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .histogram-bar:hover .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-center gap-3 mb-3">
+                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <h1 class="text-3xl font-bold text-gray-800">Same Mean, Different Distributions</h1>
+            </div>
+            <p class="text-gray-600 mb-4">
+                Three classes with identical mean scores (75%) but completely different learning patterns. 
+                This demonstrates why averages alone are insufficient for understanding student performance.
+            </p>
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                <div class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-yellow-900 font-semibold">Key Question:</p>
+                        <p class="text-yellow-800 text-sm">
+                            If you only knew the average score was 75%, which class would you rather teach? 
+                            Click through each distribution to see why the answer isn't simple.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dataset Selection -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Select a Class to Analyze:</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="selectDataset('dataset1')" id="btn-dataset1" class="p-4 rounded-lg border-2 border-purple-500 bg-purple-50 shadow-md transition-all">
+                    <h3 class="font-bold text-gray-800 mb-2">Class A: Normal Distribution</h3>
+                    <p class="text-sm text-gray-600">Most students clustered around average</p>
+                    <p class="text-lg font-bold text-purple-600 mt-2">Mean: 75%</p>
+                </button>
+                <button onclick="selectDataset('dataset2')" id="btn-dataset2" class="p-4 rounded-lg border-2 border-gray-200 hover:border-gray-400 bg-white transition-all">
+                    <h3 class="font-bold text-gray-800 mb-2">Class B: Bimodal Distribution</h3>
+                    <p class="text-sm text-gray-600">Two distinct groups of students</p>
+                    <p class="text-lg font-bold text-purple-600 mt-2">Mean: 75%</p>
+                </button>
+                <button onclick="selectDataset('dataset3')" id="btn-dataset3" class="p-4 rounded-lg border-2 border-gray-200 hover:border-gray-400 bg-white transition-all">
+                    <h3 class="font-bold text-gray-800 mb-2">Class C: Right-Skewed</h3>
+                    <p class="text-sm text-gray-600">Most students doing well, some struggling</p>
+                    <p class="text-lg font-bold text-purple-600 mt-2">Mean: 75%</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Visualization -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+                <h2 class="text-2xl font-bold text-gray-800" id="dataset-title">Class A: Normal Distribution</h2>
+                <button onclick="toggleStats()" id="stats-toggle" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                    Hide Statistics
+                </button>
+            </div>
+
+            <!-- Histogram -->
+            <div class="mb-6">
+                <div class="h-80 border-l-2 border-b-2 border-gray-300 relative pl-10 pb-8">
+                    <!-- Y-axis labels -->
+                    <div class="absolute left-0 top-0 bottom-8 w-8 flex flex-col justify-between text-xs text-gray-600 text-right pr-2">
+                        <span id="y-max">42</span>
+                        <span id="y-75">31</span>
+                        <span id="y-50">21</span>
+                        <span id="y-25">10</span>
+                        <span>0</span>
+                    </div>
+                    <!-- Y-axis label -->
+                    <div class="absolute left-0 top-1/2 transform -translate-y-1/2 text-xs text-gray-600">
+                        <span class="inline-block transform -rotate-90 whitespace-nowrap">Number of Students</span>
+                    </div>
+                    <!-- Histogram bars -->
+                    <div class="flex items-end justify-around h-full gap-1 ml-2" id="histogram-container">
+                        <!-- Bars will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                <!-- X-axis labels -->
+                <div class="flex justify-around mt-2 pl-10 ml-2" id="labels-container">
+                    <!-- Labels will be inserted here -->
+                </div>
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-600 font-semibold">Score Range (%)</p>
+                </div>
+            </div>
+
+            <!-- Statistics Panel -->
+            <div id="stats-panel" class="border-t-2 border-gray-200 pt-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Descriptive Statistics</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-sm text-blue-600 font-semibold">Mean</p>
+                        <p class="text-2xl font-bold text-blue-900" id="stat-mean">75%</p>
+                        <p class="text-xs text-blue-700 mt-1">Average score</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="text-sm text-green-600 font-semibold">Median</p>
+                        <p class="text-2xl font-bold text-green-900" id="stat-median">75%</p>
+                        <p class="text-xs text-green-700 mt-1">Middle value</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="text-sm text-purple-600 font-semibold">Mode</p>
+                        <p class="text-lg font-bold text-purple-900" id="stat-mode">61-80</p>
+                        <p class="text-xs text-purple-700 mt-1">Most common</p>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-lg">
+                        <p class="text-sm text-orange-600 font-semibold">Std Dev</p>
+                        <p class="text-2xl font-bold text-orange-900" id="stat-sd">12</p>
+                        <p class="text-xs text-orange-700 mt-1">Variability</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Show Interpretation Button -->
+            <div class="mt-6 text-center">
+                <button onclick="toggleInterpretation()" id="interp-toggle" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg">
+                    Show Educational Interpretation
+                </button>
+            </div>
+        </div>
+
+        <!-- Interpretation Panel -->
+        <div id="interpretation-panel" class="hidden bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-start gap-3 mb-4">
+                <svg class="w-6 h-6 text-purple-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">What Does This Distribution Tell Us?</h3>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                    <p class="font-semibold text-blue-900 mb-2">Interpretation:</p>
+                    <p class="text-blue-800" id="interp-text">Students performing similarly. Standard teaching approach working for most. Few outliers.</p>
+                </div>
+
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                    <p class="font-semibold text-green-900 mb-2">Recommended Action:</p>
+                    <p class="text-green-800" id="recommend-text">Continue current approach. Minimal differentiation needed.</p>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                    <p class="font-semibold text-yellow-900 mb-2">Why This Matters:</p>
+                    <p class="text-yellow-800">
+                        If you only looked at the mean (75%), you'd think all three classes are the same. 
+                        But the distribution reveals completely different learning situations requiring 
+                        completely different instructional responses.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Takeaways -->
+        <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+            <h3 class="text-2xl font-bold mb-4">Key Takeaways</h3>
+            <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                    <div class="bg-white text-purple-600 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">1</div>
+                    <p><strong>Averages can be misleading.</strong> The mean score of 75% appears identical across all three classes, but they represent completely different learning situations.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="bg-white text-purple-600 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">2</div>
+                    <p><strong>Distribution shape matters.</strong> Normal, bimodal, and skewed distributions require different instructional approaches and interventions.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="bg-white text-purple-600 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">3</div>
+                    <p><strong>Variability reveals important patterns.</strong> Standard deviation (12 vs. 28 vs. 18) tells you how spread out students are, which impacts teaching strategy.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="bg-white text-purple-600 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">4</div>
+                    <p><strong>Always visualize your data.</strong> A histogram or similar visualization reveals patterns that summary statistics alone cannot show.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-white/30">
+                <p class="text-center italic text-lg">
+                    "Never trust a statistic you didn't visualize yourself." 
+                    <br/>
+                    <span class="text-sm">— Adapted from Churchill</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const datasets = {
+            dataset1: {
+                name: 'Class A: Normal Distribution',
+                data: [
+                    { range: '0-20', count: 0 },
+                    { range: '21-40', count: 1 },
+                    { range: '41-60', count: 8 },
+                    { range: '61-80', count: 42 },
+                    { range: '81-100', count: 9 }
+                ],
+                mean: 75,
+                median: 75,
+                mode: '61-80',
+                sd: 12,
+                color: 'bg-blue-500',
+                interpretation: 'Students performing similarly. Standard teaching approach working for most. Few outliers.',
+                recommendation: 'Continue current approach. Minimal differentiation needed.'
+            },
+            dataset2: {
+                name: 'Class B: Bimodal Distribution',
+                data: [
+                    { range: '0-20', count: 0 },
+                    { range: '21-40', count: 15 },
+                    { range: '41-60', count: 5 },
+                    { range: '61-80', count: 5 },
+                    { range: '81-100', count: 35 }
+                ],
+                mean: 75,
+                median: 77,
+                mode: '81-100 & 21-40',
+                sd: 28,
+                color: 'bg-green-500',
+                interpretation: 'Clear split: strong performers and struggling students. Few in middle. May indicate prerequisite gaps or two teaching approaches.',
+                recommendation: 'Investigate what separates groups. Consider differentiated instruction or support for lower group.'
+            },
+            dataset3: {
+                name: 'Class C: Right-Skewed',
+                data: [
+                    { range: '0-20', count: 2 },
+                    { range: '21-40', count: 3 },
+                    { range: '41-60', count: 8 },
+                    { range: '61-80', count: 20 },
+                    { range: '81-100', count: 27 }
+                ],
+                mean: 75,
+                median: 78,
+                mode: '81-100',
+                sd: 18,
+                color: 'bg-purple-500',
+                interpretation: 'Bulk of students succeeding, but tail of low performers. Assessment may be too easy for most, or specific students facing challenges.',
+                recommendation: 'Focus intervention on low tail. Consider if assessment ceiling is too low for high performers.'
+            }
+        };
+
+        let currentDataset = 'dataset1';
+        let showStats = true;
+        let showInterpretation = false;
+
+        function selectDataset(datasetKey) {
+            currentDataset = datasetKey;
+            showInterpretation = false;
+            
+            // Update button styles
+            ['dataset1', 'dataset2', 'dataset3'].forEach(key => {
+                const btn = document.getElementById('btn-' + key);
+                if (key === datasetKey) {
+                    btn.className = 'p-4 rounded-lg border-2 border-purple-500 bg-purple-50 shadow-md transition-all';
+                } else {
+                    btn.className = 'p-4 rounded-lg border-2 border-gray-200 hover:border-gray-400 bg-white transition-all';
+                }
+            });
+
+            updateVisualization();
+            document.getElementById('interpretation-panel').classList.add('hidden');
+            document.getElementById('interp-toggle').textContent = 'Show Educational Interpretation';
+        }
+
+        function updateVisualization() {
+            const dataset = datasets[currentDataset];
+            const maxCount = Math.max(...dataset.data.map(d => d.count));
+            const total = dataset.data.reduce((sum, d) => sum + d.count, 0);
+
+            // Update title
+            document.getElementById('dataset-title').textContent = dataset.name;
+
+            // Update Y-axis labels
+            document.getElementById('y-max').textContent = maxCount;
+            document.getElementById('y-75').textContent = Math.floor(maxCount * 0.75);
+            document.getElementById('y-50').textContent = Math.floor(maxCount * 0.5);
+            document.getElementById('y-25').textContent = Math.floor(maxCount * 0.25);
+
+            // Update histogram
+            const histContainer = document.getElementById('histogram-container');
+            const labelsContainer = document.getElementById('labels-container');
+            histContainer.innerHTML = '';
+            labelsContainer.innerHTML = '';
+
+            dataset.data.forEach((item, index) => {
+                const heightPercent = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+                const percentage = ((item.count / total) * 100).toFixed(1);
+
+                // Create bar container
+                const barContainer = document.createElement('div');
+                barContainer.className = 'flex flex-col items-center flex-1 h-full justify-end';
+                
+                // Create bar
+                const bar = document.createElement('div');
+                bar.className = `w-full ${dataset.color} rounded-t transition-all duration-500 histogram-bar relative group flex items-end justify-center pb-2`;
+                bar.style.height = `${heightPercent}%`;
+                bar.style.minHeight = item.count > 0 ? '30px' : '0';
+
+                if (item.count > 0) {
+                    // Add count label
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'text-white font-bold text-sm';
+                    countSpan.textContent = item.count;
+                    bar.appendChild(countSpan);
+
+                    // Add tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-3 py-1 rounded text-xs whitespace-nowrap z-10';
+                    tooltip.textContent = `${percentage}% of students`;
+                    bar.appendChild(tooltip);
+                }
+
+                barContainer.appendChild(bar);
+                histContainer.appendChild(barContainer);
+
+                // Create x-axis label
+                const label = document.createElement('div');
+                label.className = 'flex-1 text-center';
+                label.innerHTML = `<p class="text-xs font-semibold text-gray-700">${item.range}</p>`;
+                labelsContainer.appendChild(label);
+            });
+
+            // Update statistics
+            document.getElementById('stat-mean').textContent = dataset.mean + '%';
+            document.getElementById('stat-median').textContent = dataset.median + '%';
+            document.getElementById('stat-mode').textContent = dataset.mode;
+            document.getElementById('stat-sd').textContent = dataset.sd;
+
+            // Update interpretation text
+            document.getElementById('interp-text').textContent = dataset.interpretation;
+            document.getElementById('recommend-text').textContent = dataset.recommendation;
+        }
+
+        function toggleStats() {
+            showStats = !showStats;
+            const panel = document.getElementById('stats-panel');
+            const toggle = document.getElementById('stats-toggle');
+            if (showStats) {
+                panel.style.display = 'block';
+                toggle.textContent = 'Hide Statistics';
+            } else {
+                panel.style.display = 'none';
+                toggle.textContent = 'Show Statistics';
+            }
+        }
+
+        function toggleInterpretation() {
+            showInterpretation = !showInterpretation;
+            const panel = document.getElementById('interpretation-panel');
+            const toggle = document.getElementById('interp-toggle');
+            if (showInterpretation) {
+                panel.classList.remove('hidden');
+                toggle.textContent = 'Hide Educational Interpretation';
+            } else {
+                panel.classList.add('hidden');
+                toggle.textContent = 'Show Educational Interpretation';
+            }
+        }
+
+        // Initialize visualization on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            updateVisualization();
+        });
+    </script>
+</body>
+</html>
