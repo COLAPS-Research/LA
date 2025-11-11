@@ -1,0 +1,481 @@
+<! Visualization created with Claude.ai>
+    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Network Visualization - Discussion Forum</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        #network {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .legend-section {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #666;
+        }
+        
+        .legend-line {
+            width: 30px;
+            height: 2px;
+            margin-right: 10px;
+        }
+        
+        .node {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .node:hover {
+            stroke: #333 !important;
+            stroke-width: 3 !important;
+        }
+        
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+        
+        .label {
+            font-size: 11px;
+            font-weight: 500;
+            pointer-events: none;
+            fill: #333;
+        }
+        
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 13px;
+            display: none;
+            max-width: 250px;
+            z-index: 1000;
+        }
+        
+        .tooltip-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .tooltip-content {
+            line-height: 1.6;
+        }
+        
+        .insights {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e8f4f8;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+        }
+        
+        .insights h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        
+        .insights ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .insights li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        
+        .controls label {
+            margin-right: 15px;
+            font-weight: 500;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            margin: 5px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .controls button:hover {
+            background-color: #1976D2;
+        }
+
+        .highlighted {
+            opacity: 0.2;
+        }
+
+        .highlight-active {
+            opacity: 1 !important;
+            stroke: #ff0000 !important;
+            stroke-width: 4 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Educational Network Visualization</h1>
+        <p class="subtitle">Interactive Discussion Forum Network - Fall 2024 Course (Week 8)</p>
+        
+        <div class="controls">
+            <label>Interaction:</label>
+            <button onclick="highlightIsolated()">Highlight Isolated Students</button>
+            <button onclick="highlightCentral()">Highlight Central Students</button>
+            <button onclick="resetHighlight()">Reset View</button>
+            <span style="margin-left: 20px; color: #666;">💡 Hover over circles for student details</span>
+        </div>
+        
+        <svg id="network" width="1340" height="700">
+            <!-- Links will be drawn here -->
+            <g id="links"></g>
+            <!-- Nodes will be drawn here -->
+            <g id="nodes"></g>
+            <!-- Labels will be drawn here -->
+            <g id="labels"></g>
+        </svg>
+        
+        <div class="legend">
+            <div class="legend-section">
+                <div class="legend-title">Node Color (Performance)</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #2ecc71;"></div>
+                    <span>High Performers (A: 85-100%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f39c12;"></div>
+                    <span>Medium Performers (B-C: 70-84%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #e74c3c;"></div>
+                    <span>Struggling Students (D-F: <70%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #9b59b6;"></div>
+                    <span>Instructor/TA</span>
+                </div>
+            </div>
+            
+            <div class="legend-section">
+                <div class="legend-title">Node Size</div>
+                <div class="legend-item">
+                    <span>Larger circles = More posts/contributions</span>
+                </div>
+                <div class="legend-item">
+                    <span>Smaller circles = Fewer contributions</span>
+                </div>
+            </div>
+            
+            <div class="legend-section">
+                <div class="legend-title">Connections (Links)</div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background-color: #999; width: 40px; height: 3px;"></div>
+                    <span>Thicker = More interactions</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background-color: #999; width: 40px; height: 1px;"></div>
+                    <span>Thinner = Fewer interactions</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="insights">
+            <h3>🔍 Key Insights from This Network</h3>
+            <ul>
+                <li><strong>Central Hub (Emma - top center):</strong> High-performing student acts as community connector with highest degree centrality</li>
+                <li><strong>Isolated Nodes (bottom right):</strong> Three students are completely disconnected - immediate intervention needed</li>
+                <li><strong>Performance Clustering:</strong> High performers (green) cluster together on the left side</li>
+                <li><strong>Instructor Role (purple):</strong> The instructor bridges multiple groups but struggling students have limited direct contact</li>
+                <li><strong>Bridge Students:</strong> Grace and Leo (orange nodes) connect different performance groups - valuable for peer mentoring</li>
+                <li><strong>Struggling Student Isolation:</strong> Lower-performing students (red) have fewer connections on average</li>
+                <li><strong>Recommended Action:</strong> Create structured peer support by pairing isolated students with bridge connectors</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-title" id="tooltip-title"></div>
+        <div class="tooltip-content" id="tooltip-content"></div>
+    </div>
+
+    <script>
+        // Network data with pre-calculated positions
+        const networkData = {
+            nodes: [
+                // Instructor - center top
+                {id: "Prof", name: "Dr. Smith", role: "Instructor", performance: 100, posts: 45, connections: 6, x: 670, y: 150, color: "#9b59b6", size: 22},
+                
+                // High performers - left cluster
+                {id: "S1", name: "Alice", role: "Student", performance: 92, posts: 28, connections: 4, x: 350, y: 250, color: "#2ecc71", size: 18},
+                {id: "S2", name: "Bob", role: "Student", performance: 88, posts: 22, connections: 4, x: 450, y: 300, color: "#2ecc71", size: 16},
+                {id: "S3", name: "Carol", role: "Student", performance: 95, posts: 31, connections: 6, x: 400, y: 200, color: "#2ecc71", size: 19},
+                {id: "S4", name: "David", role: "Student", performance: 90, posts: 25, connections: 5, x: 500, y: 250, color: "#2ecc71", size: 17},
+                {id: "S5", name: "Emma", role: "Student", performance: 94, posts: 35, connections: 9, x: 550, y: 200, color: "#2ecc71", size: 20},
+                {id: "S6", name: "Frank", role: "Student", performance: 87, posts: 20, connections: 3, x: 550, y: 350, color: "#2ecc71", size: 15},
+                
+                // Medium performers - middle
+                {id: "S7", name: "Grace", role: "Student", performance: 78, posts: 18, connections: 5, x: 700, y: 300, color: "#f39c12", size: 15},
+                {id: "S8", name: "Henry", role: "Student", performance: 82, posts: 16, connections: 4, x: 800, y: 250, color: "#f39c12", size: 14},
+                {id: "S9", name: "Iris", role: "Student", performance: 75, posts: 14, connections: 2, x: 750, y: 400, color: "#f39c12", size: 13},
+                {id: "S10", name: "Jack", role: "Student", performance: 80, posts: 19, connections: 5, x: 850, y: 350, color: "#f39c12", size: 15},
+                {id: "S11", name: "Kate", role: "Student", performance: 76, posts: 12, connections: 2, x: 900, y: 450, color: "#f39c12", size: 12},
+                {id: "S12", name: "Leo", role: "Student", performance: 79, posts: 17, connections: 5, x: 950, y: 350, color: "#f39c12", size: 14},
+                
+                // Struggling students - right side
+                {id: "S13", name: "Maya", role: "Student", performance: 68, posts: 8, connections: 4, x: 1000, y: 250, color: "#e74c3c", size: 11},
+                {id: "S14", name: "Noah", role: "Student", performance: 62, posts: 6, connections: 2, x: 1050, y: 300, color: "#e74c3c", size: 10},
+                {id: "S15", name: "Olivia", role: "Student", performance: 65, posts: 9, connections: 4, x: 1100, y: 250, color: "#e74c3c", size: 11},
+                {id: "S16", name: "Paul", role: "Student", performance: 58, posts: 5, connections: 2, x: 1150, y: 350, color: "#e74c3c", size: 9},
+                {id: "S17", name: "Quinn", role: "Student", performance: 67, posts: 7, connections: 1, x: 1150, y: 450, color: "#e74c3c", size: 10},
+                
+                // Isolated students - bottom right
+                {id: "S18", name: "Rachel", role: "Student", performance: 55, posts: 1, connections: 0, x: 1100, y: 550, color: "#e74c3c", size: 8},
+                {id: "S19", name: "Sam", role: "Student", performance: 52, posts: 0, connections: 0, x: 1200, y: 550, color: "#e74c3c", size: 8},
+                {id: "S20", name: "Tina", role: "Student", performance: 50, posts: 1, connections: 0, x: 1150, y: 620, color: "#e74c3c", size: 8}
+            ],
+            links: [
+                // Instructor connections
+                {source: "Prof", target: "S1", weight: 5},
+                {source: "Prof", target: "S3", weight: 6},
+                {source: "Prof", target: "S5", weight: 8},
+                {source: "Prof", target: "S7", weight: 4},
+                {source: "Prof", target: "S10", weight: 3},
+                {source: "Prof", target: "S13", weight: 2},
+                
+                // High performer cluster
+                {source: "S1", target: "S2", weight: 7},
+                {source: "S1", target: "S3", weight: 6},
+                {source: "S1", target: "S5", weight: 8},
+                {source: "S2", target: "S3", weight: 5},
+                {source: "S2", target: "S4", weight: 6},
+                {source: "S3", target: "S4", weight: 7},
+                {source: "S3", target: "S5", weight: 9},
+                {source: "S4", target: "S5", weight: 6},
+                {source: "S4", target: "S6", weight: 5},
+                {source: "S5", target: "S6", weight: 7},
+                
+                // Bridges
+                {source: "S5", target: "S7", weight: 5},
+                {source: "S5", target: "S8", weight: 4},
+                {source: "S5", target: "S12", weight: 6},
+                {source: "S6", target: "S8", weight: 3},
+                
+                // Medium performers
+                {source: "S7", target: "S8", weight: 4},
+                {source: "S7", target: "S9", weight: 3},
+                {source: "S7", target: "S13", weight: 3},
+                {source: "S8", target: "S10", weight: 5},
+                {source: "S9", target: "S10", weight: 4},
+                {source: "S10", target: "S11", weight: 3},
+                {source: "S10", target: "S12", weight: 4},
+                {source: "S11", target: "S12", weight: 3},
+                
+                // Bridge to struggling
+                {source: "S12", target: "S13", weight: 4},
+                {source: "S12", target: "S15", weight: 3},
+                
+                // Struggling cluster
+                {source: "S13", target: "S14", weight: 2},
+                {source: "S13", target: "S15", weight: 3},
+                {source: "S14", target: "S15", weight: 2},
+                {source: "S15", target: "S16", weight: 2},
+                {source: "S16", target: "S17", weight: 2}
+            ]
+        };
+
+        // Create node lookup
+        const nodeMap = {};
+        networkData.nodes.forEach(node => {
+            nodeMap[node.id] = node;
+        });
+
+        // Draw links
+        const linksGroup = document.getElementById('links');
+        networkData.links.forEach(link => {
+            const source = nodeMap[link.source];
+            const target = nodeMap[link.target];
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('class', 'link');
+            line.setAttribute('x1', source.x);
+            line.setAttribute('y1', source.y);
+            line.setAttribute('x2', target.x);
+            line.setAttribute('y2', target.y);
+            line.setAttribute('stroke-width', Math.max(1, link.weight / 2));
+            linksGroup.appendChild(line);
+        });
+
+        // Draw nodes
+        const nodesGroup = document.getElementById('nodes');
+        const tooltip = document.getElementById('tooltip');
+        const tooltipTitle = document.getElementById('tooltip-title');
+        const tooltipContent = document.getElementById('tooltip-content');
+
+        networkData.nodes.forEach(node => {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('class', 'node');
+            circle.setAttribute('cx', node.x);
+            circle.setAttribute('cy', node.y);
+            circle.setAttribute('r', node.size);
+            circle.setAttribute('fill', node.color);
+            circle.setAttribute('stroke', '#fff');
+            circle.setAttribute('stroke-width', '2');
+            circle.setAttribute('data-id', node.id);
+            circle.setAttribute('data-connections', node.connections);
+            
+            // Tooltip events
+            circle.addEventListener('mouseenter', function(e) {
+                const centrality = node.connections === 0 ? "Isolated" : 
+                                 node.connections >= 7 ? "High" :
+                                 node.connections >= 4 ? "Medium" : "Low";
+                
+                tooltipTitle.textContent = node.name;
+                tooltipContent.innerHTML = `
+                    <strong>Role:</strong> ${node.role}<br>
+                    <strong>Performance:</strong> ${node.performance}%<br>
+                    <strong>Posts:</strong> ${node.posts}<br>
+                    <strong>Connections:</strong> ${node.connections}<br>
+                    <strong>Centrality:</strong> ${centrality}
+                `;
+                tooltip.style.display = 'block';
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY - 10) + 'px';
+            });
+            
+            circle.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY - 10) + 'px';
+            });
+            
+            circle.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+            
+            nodesGroup.appendChild(circle);
+        });
+
+        // Draw labels for key nodes
+        const labelsGroup = document.getElementById('labels');
+        networkData.nodes.forEach(node => {
+            if (node.role === 'Instructor' || node.connections > 5) {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('class', 'label');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y - node.size - 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.textContent = node.name;
+                labelsGroup.appendChild(text);
+            }
+        });
+
+        // Control functions
+        function highlightIsolated() {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                const connections = parseInt(node.getAttribute('data-connections'));
+                if (connections === 0) {
+                    node.classList.add('highlight-active');
+                } else {
+                    node.classList.add('highlighted');
+                }
+            });
+        }
+
+        function highlightCentral() {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                const connections = parseInt(node.getAttribute('data-connections'));
+                if (connections >= 7) {
+                    node.classList.add('highlight-active');
+                } else {
+                    node.classList.add('highlighted');
+                }
+            });
+        }
+
+        function resetHighlight() {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                node.classList.remove('highlighted');
+                node.classList.remove('highlight-active');
+            });
+        }
+    </script>
+</body>
+</html>
