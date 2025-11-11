@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Case Study: Discussion Forum Analysis</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .case-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .case-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .case-header .subtitle {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .context-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .context-box h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .context-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .visualization-section {
+            margin: 25px 0;
+        }
+        
+        #network {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .legend-section {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #333;
+            flex-shrink: 0;
+        }
+        
+        .analysis-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .analysis-card {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card-active {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .card-lurkers {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .analysis-card h3 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .analysis-card ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .analysis-card li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .interventions {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 25px;
+            border: 2px solid #2196F3;
+        }
+        
+        .interventions h3 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 20px;
+        }
+        
+        .intervention-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .intervention-box {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .intervention-box h4 {
+            margin: 0 0 10px 0;
+            color: #1976D2;
+            font-size: 16px;
+        }
+        
+        .intervention-box .target {
+            font-weight: bold;
+            color: #d32f2f;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .intervention-box .action {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        
+        .controls button {
+            padding: 10px 20px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .controls button:hover {
+            background-color: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .node {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .node:hover {
+            stroke: #000 !important;
+            stroke-width: 4 !important;
+        }
+        
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+        
+        .label {
+            font-size: 11px;
+            font-weight: 600;
+            pointer-events: none;
+            fill: #333;
+        }
+        
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background-color: rgba(0, 0, 0, 0.92);
+            color: white;
+            border-radius: 6px;
+            pointer-events: none;
+            font-size: 13px;
+            display: none;
+            max-width: 280px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .tooltip-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 5px;
+        }
+        
+        .tooltip-content {
+            line-height: 1.7;
+        }
+
+        .tooltip-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .badge-active {
+            background-color: #28a745;
+        }
+
+        .badge-moderate {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .badge-lurker {
+            background-color: #dc3545;
+        }
+
+        .badge-instructor {
+            background-color: #9b59b6;
+        }
+        
+        .highlighted {
+            opacity: 0.2;
+        }
+        
+        .highlight-active {
+            opacity: 1 !important;
+            stroke: #ffeb3b !important;
+            stroke-width: 5 !important;
+            filter: drop-shadow(0 0 8px #ffc107);
+        }
+
+        @media (max-width: 768px) {
+            .analysis-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="case-header">
+            <h1>📊 Mini Case Study: Discussion Forum Analysis</h1>
+            <p class="subtitle">EDUC 5420: Educational Technology • Fall 2024 • Week 6 of 15</p>
+        </div>
+        
+        <div class="context-box">
+            <h3>🎯 Course Context</h3>
+            <ul>
+                <li><strong>Course:</strong> Graduate-level Educational Technology (25 students)</li>
+                <li><strong>Forum Activity:</strong> Weekly discussion threads with minimum 3 posts required</li>
+                <li><strong>Current Status:</strong> Mid-semester (6 weeks in)</li>
+                <li><strong>Instructor Concern:</strong> Several students minimally participating; declining engagement trends</li>
+                <li><strong>Data Source:</strong> LMS discussion board logs analyzed for interaction patterns</li>
+            </ul>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number">25</span>
+                <span class="stat-label">Total Students</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">7</span>
+                <span class="stat-label">Active Contributors (28%)</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">11</span>
+                <span class="stat-label">Moderate Participants (44%)</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">7</span>
+                <span class="stat-label">Lurkers/Minimal (28%)</span>
+            </div>
+        </div>
+
+        <div class="visualization-section">
+            <h2>Network Visualization</h2>
+            
+            <div class="controls">
+                <button onclick="showAll()">Show All</button>
+                <button onclick="highlightActive()">Highlight Active Contributors</button>
+                <button onclick="highlightLurkers()">Highlight Lurkers</button>
+                <button onclick="highlightInterventionTargets()">Show Intervention Targets</button>
+            </div>
+            
+            <svg id="network" width="1140" height="600">
+                <g id="links"></g>
+                <g id="nodes"></g>
+                <g id="labels"></g>
+            </svg>
+        </div>
+
+        <div class="legend">
+            <div class="legend-section">
+                <div class="legend-title">🎨 Node Color (Participation Level)</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #28a745;"></div>
+                    <span><strong>Active Contributors:</strong> 15+ posts, regular responses</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ffc107;"></div>
+                    <span><strong>Moderate:</strong> 5-14 posts, occasional engagement</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #dc3545;"></div>
+                    <span><strong>Lurkers/Minimal:</strong> <5 posts, reading only</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #6f42c1;"></div>
+                    <span><strong>Instructor:</strong> Course facilitator</span>
+                </div>
+            </div>
+            
+            <div class="legend-section">
+                <div class="legend-title">📏 Node Size</div>
+                <div class="legend-item">
+                    <span>Size represents <strong>total discussion posts</strong></span>
+                </div>
+                <div class="legend-item">
+                    <span>Larger = more contributions to discussions</span>
+                </div>
+            </div>
+            
+            <div class="legend-section">
+                <div class="legend-title">🔗 Connections</div>
+                <div class="legend-item">
+                    <span>Lines = direct replies or threaded discussions</span>
+                </div>
+                <div class="legend-item">
+                    <span>Thicker lines = more frequent interactions</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="analysis-section">
+            <div class="analysis-card card-active">
+                <h3>✅ Active Contributors (7 students)</h3>
+                <ul>
+                    <li><strong>Sarah, Miguel, Aisha, David</strong> form core discussion group</li>
+                    <li>Average 22 posts per student (vs. 8 course average)</li>
+                    <li>Respond to others within 24 hours typically</li>
+                    <li>Ask follow-up questions and extend discussions</li>
+                    <li>All performing well academically (A/B grades)</li>
+                    <li><strong>Risk:</strong> Could dominate discussions, intimidating quieter students</li>
+                </ul>
+            </div>
+            
+            <div class="analysis-card card-lurkers">
+                <h3>⚠️ Lurkers/Minimal Participants (7 students)</h3>
+                <ul>
+                    <li>Average only 2-3 posts (meeting bare minimum)</li>
+                    <li>Posts are often short, surface-level responses</li>
+                    <li>Rarely initiate new threads or ask questions</li>
+                    <li>No connections to other students in network</li>
+                    <li>Lower average grades (C/D range)</li>
+                    <li><strong>Concern:</strong> High risk for course withdrawal or failure</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="interventions">
+            <h3>🎯 Instructor Intervention Opportunities</h3>
+            <p style="margin-top: 0; color: #1565c0;">Based on network analysis, here are targeted interventions to improve engagement:</p>
+            
+            <div class="intervention-grid">
+                <div class="intervention-box">
+                    <h4>1. Structured Small Groups</h4>
+                    <div class="target">Target: All lurkers + 1-2 active students</div>
+                    <div class="action">
+                        Create mandatory small discussion groups (4-5 students) mixing participation levels. Assign rotating discussion leaders. This provides safe space for quieter students.
+                    </div>
+                </div>
+                
+                <div class="intervention-box">
+                    <h4>2. Peer Mentoring Pairs</h4>
+                    <div class="target">Target: Rachel, Jordan, Chris (isolated lurkers)</div>
+                    <div class="action">
+                        Pair each struggling student with an active contributor (Sarah, Miguel, or Aisha) for one-on-one accountability and support. Frame as "study buddies."
+                    </div>
+                </div>
+                
+                <div class="intervention-box">
+                    <h4>3. Varied Discussion Formats</h4>
+                    <div class="target">Target: Moderate participants to become more active</div>
+                    <div class="action">
+                        Introduce discussion formats beyond text: video responses, voice notes, concept maps. Some students may prefer alternative expression modes.
+                    </div>
+                </div>
+                
+                <div class="intervention-box">
+                    <h4>4. Direct Outreach</h4>
+                    <div class="target">Target: 7 minimal participants individually</div>
+                    <div class="action">
+                        Send personalized emails acknowledging low participation, asking about barriers (time? confidence? technical?), and offering support. Schedule optional 1:1 check-ins.
+                    </div>
+                </div>
+                
+                <div class="intervention-box">
+                    <h4>5. Discussion Role Rotation</h4>
+                    <div class="target">Target: All students, especially lurkers</div>
+                    <div class="action">
+                        Assign weekly roles: discussion starter, questioner, synthesizer, critic. Forces lurkers to participate actively at least once per rotation cycle.
+                    </div>
+                </div>
+                
+                <div class="intervention-box">
+                    <h4>6. Engagement Analytics Dashboard</h4>
+                    <div class="target">Target: Student self-awareness</div>
+                    <div class="action">
+                        Share simplified network position visualization with students privately. Help them see their engagement level vs. peers. Encourage self-reflection and goal-setting.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="context-box" style="background-color: #d1ecf1; border-color: #0c5460; margin-top: 25px;">
+            <h3 style="color: #0c5460;">💡 Key Takeaways for Instructors</h3>
+            <ul>
+                <li><strong>Early identification matters:</strong> Week 6 is ideal time to intervene - not too early, not too late</li>
+                <li><strong>Isolation predicts struggle:</strong> Students with zero connections are at highest risk</li>
+                <li><strong>One-size doesn't fit all:</strong> Lurking may reflect confidence issues, time constraints, learning preferences, or technical barriers</li>
+                <li><strong>Active ≠ Always Good:</strong> Over-active students may need guidance to leave space for others</li>
+                <li><strong>Network position matters:</strong> Being connected predicts outcomes beyond individual participation counts</li>
+                <li><strong>Intervention should be multilevel:</strong> Combine structural changes (group formats) with individual support (outreach)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-title" id="tooltip-title"></div>
+        <div class="tooltip-content" id="tooltip-content"></div>
+    </div>
+
+    <script>
+        const networkData = {
+            nodes: [
+                // Instructor
+                {id: "Prof", name: "Dr. Martinez", role: "Instructor", posts: 38, connections: 9, type: "instructor", x: 570, y: 100},
+                
+                // Active contributors (green) - central cluster
+                {id: "S1", name: "Sarah", role: "Student", posts: 28, connections: 8, type: "active", x: 400, y: 200},
+                {id: "S2", name: "Miguel", role: "Student", posts: 25, connections: 7, type: "active", x: 550, y: 220},
+                {id: "S3", name: "Aisha", role: "Student", posts: 22, connections: 8, type: "active", x: 700, y: 200},
+                {id: "S4", name: "David", role: "Student", posts: 20, connections: 6, type: "active", x: 480, y: 300},
+                {id: "S5", name: "Jennifer", role: "Student", posts: 18, connections: 5, type: "active", x: 620, y: 300},
+                {id: "S6", name: "Marcus", role: "Student", posts: 17, connections: 5, type: "active", x: 340, y: 300},
+                {id: "S7", name: "Lisa", role: "Student", posts: 15, connections: 4, type: "active", x: 760, y: 300},
+                
+                // Moderate participants (yellow) - middle ring
+                {id: "S8", name: "James", role: "Student", posts: 12, connections: 4, type: "moderate", x: 300, y: 400},
+                {id: "S9", name: "Emma", role: "Student", posts: 11, connections: 3, type: "moderate", x: 450, y: 420},
+                {id: "S10", name: "Alex", role: "Student", posts: 10, connections: 4, type: "moderate", x: 650, y: 420},
+                {id: "S11", name: "Olivia", role: "Student", posts: 9, connections: 3, type: "moderate", x: 800, y: 400},
+                {id: "S12", name: "Noah", role: "Student", posts: 8, connections: 2, type: "moderate", x: 350, y: 500},
+                {id: "S13", name: "Sophia", role: "Student", posts: 8, connections: 3, type: "moderate", x: 550, y: 480},
+                {id: "S14", name: "Ethan", role: "Student", posts: 7, connections: 2, type: "moderate", x: 750, y: 500},
+                {id: "S15", name: "Mia", role: "Student", posts: 7, connections: 2, type: "moderate", x: 200, y: 300},
+                {id: "S16", name: "Liam", role: "Student", posts: 6, connections: 2, type: "moderate", x: 850, y: 250},
+                {id: "S17", name: "Ava", role: "Student", posts: 6, connections: 1, type: "moderate", x: 200, y: 450},
+                {id: "S18", name: "Lucas", role: "Student", posts: 5, connections: 1, type: "moderate", x: 900, y: 350},
+                
+                // Lurkers/minimal (red) - periphery, isolated
+                {id: "S19", name: "Rachel", role: "Student", posts: 3, connections: 0, type: "lurker", x: 150, y: 200},
+                {id: "S20", name: "Jordan", role: "Student", posts: 3, connections: 0, type: "lurker", x: 100, y: 350},
+                {id: "S21", name: "Chris", role: "Student", posts: 2, connections: 0, type: "lurker", x: 950, y: 180},
+                {id: "S22", name: "Taylor", role: "Student", posts: 2, connections: 1, type: "lurker", x: 980, y: 450},
+                {id: "S23", name: "Morgan", role: "Student", posts: 2, connections: 1, type: "lurker", x: 450, y: 530},
+                {id: "S24", name: "Casey", role: "Student", posts: 2, connections: 0, type: "lurker", x: 100, y: 500},
+                {id: "S25", name: "Riley", role: "Student", posts: 2, connections: 1, type: "lurker", x: 850, y: 530}
+            ],
+            links: [
+                // Instructor to active contributors
+                {source: "Prof", target: "S1", weight: 5},
+                {source: "Prof", target: "S2", weight: 6},
+                {source: "Prof", target: "S3", weight: 5},
+                {source: "Prof", target: "S4", weight: 4},
+                {source: "Prof", target: "S5", weight: 4},
+                {source: "Prof", target: "S10", weight: 3},
+                {source: "Prof", target: "S13", weight: 2},
+                {source: "Prof", target: "S8", weight: 2},
+                {source: "Prof", target: "S22", weight: 1},
+                
+                // Active contributors - highly connected core
+                {source: "S1", target: "S2", weight: 8},
+                {source: "S1", target: "S3", weight: 7},
+                {source: "S1", target: "S4", weight: 6},
+                {source: "S1", target: "S5", weight: 5},
+                {source: "S1", target: "S6", weight: 6},
+                {source: "S1", target: "S8", weight: 4},
+                {source: "S1", target: "S9", weight: 3},
+                {source: "S1", target: "S12", weight: 2},
+                
+                {source: "S2", target: "S3", weight: 7},
+                {source: "S2", target: "S4", weight: 5},
+                {source: "S2", target: "S5", weight: 6},
+                {source: "S2", target: "S7", weight: 4},
+                {source: "S2", target: "S10", weight: 3},
+                {source: "S2", target: "S13", weight: 3},
+                
+                {source: "S3", target: "S4", weight: 5},
+                {source: "S3", target: "S5", weight: 6},
+                {source: "S3", target: "S7", weight: 5},
+                {source: "S3", target: "S10", weight: 4},
+                {source: "S3", target: "S11", weight: 3},
+                {source: "S3", target: "S14", weight: 2},
+                {source: "S3", target: "S16", weight: 2},
+                
+                {source: "S4", target: "S5", weight: 5},
+                {source: "S4", target: "S6", weight: 4},
+                {source: "S4", target: "S9", weight: 3},
+                {source: "S4", target: "S12", weight: 2},
+                
+                {source: "S5", target: "S7", weight: 4},
+                {source: "S5", target: "S10", weight: 3},
+                {source: "S5", target: "S13", weight: 3},
+                
+                {source: "S6", target: "S8", weight: 3},
+                {source: "S6", target: "S12", weight: 2},
+                {source: "S6", target: "S15", weight: 2},
+                
+                {source: "S7", target: "S11", weight: 3},
+                {source: "S7", target: "S14", weight: 2},
+                {source: "S7", target: "S16", weight: 2},
+                
+                // Moderate participants
+                {source: "S8", target: "S9", weight: 3},
+                {source: "S8", target: "S12", weight: 2},
+                {source: "S8", target: "S15", weight: 2},
+                
+                {source: "S9", target: "S12", weight: 2},
+                {source: "S9", target: "S13", weight: 2},
+                
+                {source: "S10", target: "S11", weight: 3},
+                {source: "S10", target: "S13", weight: 2},
+                {source: "S10", target: "S14", weight: 2},
+                
+                {source: "S11", target: "S14", weight: 2},
+                {source: "S11", target: "S16", weight: 2},
+                
+                {source: "S12", target: "S17", weight: 1},
+                
+                {source: "S13", target: "S23", weight: 1},
+                
+                {source: "S14", target: "S18", weight: 1},
+                
+                {source: "S16", target: "S18", weight: 1},
+                
+                // Minimal lurker connections
+                {source: "S22", target: "S25", weight: 1},
+                {source: "S23", target: "S25", weight: 1}
+            ]
+        };
+
+        // Create node lookup
+        const nodeMap = {};
+        networkData.nodes.forEach(node => {
+            nodeMap[node.id] = node;
+        });
+
+        // Color mapping
+        const colorMap = {
+            "instructor": "#6f42c1",
+            "active": "#28a745",
+            "moderate": "#ffc107",
+            "lurker": "#dc3545"
+        };
+
+        // Size scale
+        function getNodeSize(posts) {
+            return Math.max(8, Math.min(25, posts * 0.7));
+        }
+
+        // Draw links
+        const linksGroup = document.getElementById('links');
+        networkData.links.forEach(link => {
+            const source = nodeMap[link.source];
+            const target = nodeMap[link.target];
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('class', 'link');
+            line.setAttribute('x1', source.x);
+            line.setAttribute('y1', source.y);
+            line.setAttribute('x2', target.x);
+            line.setAttribute('y2', target.y);
+            line.setAttribute('stroke-width', Math.max(0.5, link.weight * 0.5));
+            linksGroup.appendChild(line);
+        });
+
+        // Draw nodes
+        const nodesGroup = document.getElementById('nodes');
+        const tooltip = document.getElementById('tooltip');
+        const tooltipTitle = document.getElementById('tooltip-title');
+        const tooltipContent = document.getElementById('tooltip-content');
+
+        networkData.nodes.forEach(node => {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('class', 'node');
+            circle.setAttribute('cx', node.x);
+            circle.setAttribute('cy', node.y);
+            circle.setAttribute('r', getNodeSize(node.posts));
+            circle.setAttribute('fill', colorMap[node.type]);
+            circle.setAttribute('stroke', '#fff');
+            circle.setAttribute('stroke-width', '2');
+            circle.setAttribute('data-id', node.id);
+            circle.setAttribute('data-type', node.type);
+            circle.setAttribute('data-connections', node.connections);
+            
+            circle.addEventListener('mouseenter', function(e) {
+                let badge = '';
+                let badgeClass = '';
+                if (node.type === 'active') {
+                    badge = 'Active Contributor';
+                    badgeClass = 'badge-active';
+                } else if (node.type === 'moderate') {
+                    badge = 'Moderate Participant';
+                    badgeClass = 'badge-moderate';
+                } else if (node.type === 'lurker') {
+                    badge = 'Minimal/Lurker';
+                    badgeClass = 'badge-lurker';
+                } else {
+                    badge = 'Instructor';
+                    badgeClass = 'badge-instructor';
+                }
+                
+                tooltipTitle.textContent = node.name;
+                tooltipContent.innerHTML = `
+                    <strong>Role:</strong> ${node.role}<br>
+                    <strong>Posts:</strong> ${node.posts}<br>
+                    <strong>Connections:</strong> ${node.connections}<br>
+                    <span class="tooltip-badge ${badgeClass}">${badge}</span>
+                `;
+                tooltip.style.display = 'block';
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY - 10) + 'px';
+            });
+            
+            circle.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY - 10) + 'px';
+            });
+            
+            circle.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+            });
+            
+            nodesGroup.appendChild(circle);
+        });
+
+        // Draw labels
+        const labelsGroup = document.getElementById('labels');
+        networkData.nodes.forEach(node => {
+            if (node.type === 'instructor' || node.type === 'active') {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('class', 'label');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y - getNodeSize(node.posts) - 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.textContent = node.name;
+                labelsGroup.appendChild(text);
+            }
+        });
+
+        // Control functions
+        function showAll() {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                node.classList.remove('highlighted', 'highlight-active');
+            });
+        }
+
+        function highlightActive() {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                const type = node.getAttribute('data-type');
+                if (type === 'active') {
+                    node.classList.add('highlight-active');
+                    node.classList.remove('highlighted');
+                } else {
+                    node.classList.add('highlighted');
+                    node.classList.remove('highlight-active');
+                }
+            });
+        }
+
+        function highlightLurkers() {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                const type = node.getAttribute('data-type');
+                if (type === 'lurker') {
+                    node.classList.add('highlight-active');
+                    node.classList.remove('highlighted');
+                } else {
+                    node.classList.add('highlighted');
+                    node.classList.remove('highlight-active');
+                }
+            });
+        }
+
+        function highlightInterventionTargets() {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                const connections = parseInt(node.getAttribute('data-connections'));
+                const type = node.getAttribute('data-type');
+                // Target: lurkers AND isolated moderate participants
+                if (type === 'lurker' || (type === 'moderate' && connections <= 1)) {
+                    node.classList.add('highlight-active');
+                    node.classList.remove('highlighted');
+                } else {
+                    node.classList.add('highlighted');
+                    node.classList.remove('highlight-active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
