@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Analytics Technique Matching Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .instructions {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+
+        .instructions h3 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        .instructions p {
+            color: #34495e;
+            line-height: 1.6;
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .score {
+            font-size: 1.3em;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card-column {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            min-height: 400px;
+        }
+
+        .column-header {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: white;
+        }
+
+        .problem-header {
+            background: #3498db;
+        }
+
+        .technique-header {
+            background: #27ae60;
+        }
+
+        .application-header {
+            background: #f39c12;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            cursor: move;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .card.problem {
+            border-left: 5px solid #3498db;
+        }
+
+        .card.technique {
+            border-left: 5px solid #27ae60;
+        }
+
+        .card.application {
+            border-left: 5px solid #f39c12;
+        }
+
+        .card.selected {
+            border: 3px solid #e74c3c;
+            background: #fff5f5;
+        }
+
+        .card.matched {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #d5f4e6;
+        }
+
+        .card-id {
+            font-weight: bold;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .card-content {
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+
+        .matches-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .matches-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .matches-header h3 {
+            color: #2c3e50;
+        }
+
+        .match-row {
+            display: grid;
+            grid-template-columns: 3fr 3fr 3fr 1fr;
+            gap: 15px;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .match-item {
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .match-problem {
+            background: #e3f2fd;
+            border-left: 4px solid #3498db;
+        }
+
+        .match-technique {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+        }
+
+        .match-application {
+            background: #fff3e0;
+            border-left: 4px solid #f39c12;
+        }
+
+        .remove-btn {
+            padding: 8px 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .feedback {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .feedback.success {
+            background: #d5f4e6;
+            border-left: 5px solid #27ae60;
+            color: #1e8449;
+            display: block;
+        }
+
+        .feedback.error {
+            background: #fadbd8;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+            display: block;
+        }
+
+        .feedback.info {
+            background: #d6eaf8;
+            border-left: 5px solid #3498db;
+            color: #1f618d;
+            display: block;
+        }
+
+        .results-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .results-modal.show {
+            display: flex;
+        }
+
+        .results-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .results-content h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .results-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-box {
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .grade {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .grade.A { color: #27ae60; }
+        .grade.B { color: #3498db; }
+        .grade.C { color: #f39c12; }
+        .grade.D { color: #e74c3c; }
+
+        .hint-section {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px dashed #f39c12;
+        }
+
+        .hint-section h4 {
+            color: #d68910;
+            margin-bottom: 10px;
+        }
+
+        .hint-btn {
+            background: #f39c12;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .hint-btn:hover {
+            background: #d68910;
+        }
+
+        .hint-content {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .hint-content.show {
+            display: block;
+        }
+
+        @media (max-width: 1200px) {
+            .game-board {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .match-row {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Learning Analytics Technique Matching Game</h1>
+        <p class="subtitle">Match educational problems with analytics techniques and applications</p>
+
+        <div class="instructions">
+            <h3>📋 How to Play:</h3>
+            <p>
+                <strong>1.</strong> Click on a <span style="color: #3498db;">Problem</span> card (blue)<br>
+                <strong>2.</strong> Click on a <span style="color: #27ae60;">Technique</span> card (green)<br>
+                <strong>3.</strong> Click on an <span style="color: #f39c12;">Application</span> card (orange)<br>
+                <strong>4.</strong> Click "Create Match" to link them together<br>
+                <strong>5.</strong> Complete all 8 matches to see your score!
+            </p>
+        </div>
+
+        <div class="game-controls">
+            <div class="timer">⏱️ Time: <span id="timer">00:00</span></div>
+            <div class="score">✅ Matches: <span id="matchCount">0</span>/8</div>
+            <button class="btn btn-success" onclick="createMatch()">Create Match</button>
+            <button class="btn btn-warning" onclick="clearSelection()">Clear Selection</button>
+            <button class="btn btn-primary" onclick="toggleHints()">💡 Show Hints</button>
+            <button class="btn btn-danger" onclick="resetGame()">🔄 Reset Game</button>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+
+        <div class="hint-section">
+            <h4>💡 Need Help?</h4>
+            <button class="hint-btn" onclick="showHint('categories')">Explain Categories</button>
+            <button class="hint-btn" onclick="showHint('examples')">Show Example</button>
+            <button class="hint-btn" onclick="showHint('strategies')">Strategy Tips</button>
+            <div id="hintContent" class="hint-content"></div>
+        </div>
+
+        <div class="matches-container">
+            <div class="matches-header">
+                <h3>Your Matches:</h3>
+                <button class="btn btn-success" onclick="checkAnswers()">Check My Answers</button>
+            </div>
+            <div id="matchesList"></div>
+        </div>
+
+        <div class="game-board">
+            <div class="card-column">
+                <div class="column-header problem-header">🔍 PROBLEMS</div>
+                <div id="problemCards"></div>
+            </div>
+
+            <div class="card-column">
+                <div class="column-header technique-header">⚙️ TECHNIQUES</div>
+                <div id="techniqueCards"></div>
+            </div>
+
+            <div class="card-column">
+                <div class="column-header application-header">🎯 APPLICATIONS</div>
+                <div id="applicationCards"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-success" style="width: 100%; padding: 15px; font-size: 1.2em;" onclick="checkAnswers()">
+            📊 Submit All Matches for Grading
+        </button>
+    </div>
+
+    <div id="resultsModal" class="results-modal">
+        <div class="results-content">
+            <h2>🎉 Results</h2>
+            <div class="grade" id="gradeDisplay">A+</div>
+            <div class="results-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="correctCount">0</div>
+                    <div class="stat-label">Correct Matches</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="timeDisplay">00:00</div>
+                    <div class="stat-label">Time Taken</div>
+                </div>
+            </div>
+            <div id="resultsDetail"></div>
+            <button class="btn btn-primary" style="margin-top: 20px;" onclick="closeResults()">Continue</button>
+            <button class="btn btn-warning" style="margin-top: 20px;" onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const problems = [
+            {id: 'P1', text: 'Students are dropping out but we don\'t know why until too late'},
+            {id: 'P2', text: 'Discussion forums have 500 posts - can\'t read them all'},
+            {id: 'P3', text: 'Students need different resources but we give everyone the same'},
+            {id: 'P4', text: 'Some students are isolated, never interact with peers'},
+            {id: 'P5', text: 'We don\'t know which course topics confuse students most'},
+            {id: 'P6', text: 'Students submit work but we can\'t assess it all meaningfully'},
+            {id: 'P7', text: 'Can\'t tell if students actually understand or just memorize'},
+            {id: 'P8', text: 'Need to know if our new teaching approach actually works'}
+        ];
+
+        const techniques = [
+            {id: 'T1', text: 'Prediction & Classification'},
+            {id: 'T2', text: 'Social Network Analysis'},
+            {id: 'T3', text: 'Personalization/Recommendation'},
+            {id: 'T4', text: 'Natural Language Processing'},
+            {id: 'T5', text: 'Clustering'},
+            {id: 'T6', text: 'Discourse Analysis'},
+            {id: 'T7', text: 'Assessment Analytics'},
+            {id: 'T8', text: 'A/B Testing & Experimentation'}
+        ];
+
+        const applications = [
+            {id: 'A1', text: 'Early warning system with traffic lights (red/yellow/green)'},
+            {id: 'A2', text: 'Network visualization showing connections between students'},
+            {id: 'A3', text: 'Adaptive content system suggesting resources'},
+            {id: 'A4', text: 'Automated essay feedback on structure and argumentation'},
+            {id: 'A5', text: 'Student cohort identification by learning patterns'},
+            {id: 'A6', text: 'Topic modeling of discussion forum themes'},
+            {id: 'A7', text: 'Concept understanding assessment through writing analysis'},
+            {id: 'A8', text: 'Comparative analysis of teaching method effectiveness'}
+        ];
+
+        // Correct matches (for validation)
+        const correctMatches = {
+            'P1-T1-A1': true, // Dropout prediction → Early warning
+            'P2-T6-A6': true, // Forum overload → Topic modeling
+            'P3-T3-A3': true, // One-size-fits-all → Personalization
+            'P4-T2-A2': true, // Isolation → Network analysis
+            'P5-T5-A5': true, // Unknown struggles → Clustering
+            'P6-T4-A4': true, // Assessment load → NLP feedback
+            'P7-T7-A7': true, // Surface learning → Concept analysis
+            'P8-T8-A8': true  // Method effectiveness → A/B testing
+        };
+
+        // Game state
+        let selectedCards = {problem: null, technique: null, application: null};
+        let matches = [];
+        let startTime = Date.now();
+        let timerInterval = null;
+
+        // Initialize game
+        function initGame() {
+            renderCards();
+            startTimer();
+        }
+
+        // Render all cards
+        function renderCards() {
+            document.getElementById('problemCards').innerHTML = problems.map(p => 
+                `<div class="card problem" onclick="selectCard('problem', '${p.id}')" id="card-${p.id}">
+                    <div class="card-id">${p.id}</div>
+                    <div class="card-content">${p.text}</div>
+                </div>`
+            ).join('');
+
+            document.getElementById('techniqueCards').innerHTML = techniques.map(t => 
+                `<div class="card technique" onclick="selectCard('technique', '${t.id}')" id="card-${t.id}">
+                    <div class="card-id">${t.id}</div>
+                    <div class="card-content">${t.text}</div>
+                </div>`
+            ).join('');
+
+            document.getElementById('applicationCards').innerHTML = applications.map(a => 
+                `<div class="card application" onclick="selectCard('application', '${a.id}')" id="card-${a.id}">
+                    <div class="card-id">${a.id}</div>
+                    <div class="card-content">${a.text}</div>
+                </div>`
+            ).join('');
+        }
+
+        // Select a card
+        function selectCard(type, id) {
+            const card = document.getElementById(`card-${id}`);
+            if (card.classList.contains('matched')) return;
+
+            // Deselect previous card of same type
+            if (selectedCards[type]) {
+                document.getElementById(`card-${selectedCards[type]}`).classList.remove('selected');
+            }
+
+            // Select new card
+            selectedCards[type] = id;
+            card.classList.add('selected');
+
+            showFeedback('info', `Selected ${type}: ${id}`);
+        }
+
+        // Clear selection
+        function clearSelection() {
+            Object.keys(selectedCards).forEach(type => {
+                if (selectedCards[type]) {
+                    document.getElementById(`card-${selectedCards[type]}`).classList.remove('selected');
+                }
+                selectedCards[type] = null;
+            });
+            showFeedback('info', 'Selection cleared');
+        }
+
+        // Create a match
+        function createMatch() {
+            if (!selectedCards.problem || !selectedCards.technique || !selectedCards.application) {
+                showFeedback('error', 'Please select one card from each column!');
+                return;
+            }
+
+            const match = {
+                problem: selectedCards.problem,
+                technique: selectedCards.technique,
+                application: selectedCards.application
+            };
+
+            matches.push(match);
+            
+            // Mark cards as matched
+            Object.values(selectedCards).forEach(id => {
+                const card = document.getElementById(`card-${id}`);
+                card.classList.remove('selected');
+                card.classList.add('matched');
+            });
+
+            clearSelection();
+            renderMatches();
+            showFeedback('success', `Match created! (${matches.length}/8)`);
+
+            document.getElementById('matchCount').textContent = matches.length;
+
+            if (matches.length === 8) {
+                showFeedback('success', '🎉 All matches complete! Click "Submit All Matches for Grading" to see your results!');
+            }
+        }
+
+        // Render matches list
+        function renderMatches() {
+            const matchesList = document.getElementById('matchesList');
+            if (matches.length === 0) {
+                matchesList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No matches yet. Start by selecting cards!</p>';
+                return;
+            }
+
+            matchesList.innerHTML = matches.map((match, index) => {
+                const problem = problems.find(p => p.id === match.problem);
+                const technique = techniques.find(t => t.id === match.technique);
+                const application = applications.find(a => a.id === match.application);
+
+                return `
+                    <div class="match-row">
+                        <div class="match-item match-problem">
+                            <strong>${problem.id}:</strong> ${problem.text}
+                        </div>
+                        <div class="match-item match-technique">
+                            <strong>${technique.id}:</strong> ${technique.text}
+                        </div>
+                        <div class="match-item match-application">
+                            <strong>${application.id}:</strong> ${application.text}
+                        </div>
+                        <button class="remove-btn" onclick="removeMatch(${index})">❌</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Remove a match
+        function removeMatch(index) {
+            const match = matches[index];
+            
+            // Unmark cards
+            [match.problem, match.technique, match.application].forEach(id => {
+                document.getElementById(`card-${id}`).classList.remove('matched');
+            });
+
+            matches.splice(index, 1);
+            renderMatches();
+            document.getElementById('matchCount').textContent = matches.length;
+            showFeedback('info', 'Match removed');
+        }
+
+        // Check answers
+        function checkAnswers() {
+            if (matches.length === 0) {
+                showFeedback('error', 'Please create at least one match before checking!');
+                return;
+            }
+
+            stopTimer();
+            
+            let correctCount = 0;
+            const details = matches.map((match, index) => {
+                const key = `${match.problem}-${match.technique}-${match.application}`;
+                const isCorrect = correctMatches[key] === true;
+                if (isCorrect) correctCount++;
+
+                const problem = problems.find(p => p.id === match.problem);
+                const technique = techniques.find(t => t.id === match.technique);
+                const application = applications.find(a => a.id === match.application);
+
+                return `
+                    <div style="padding: 15px; margin: 10px 0; background: ${isCorrect ? '#d5f4e6' : '#fadbd8'}; border-radius: 8px; text-align: left;">
+                        <strong>${isCorrect ? '✅' : '❌'} Match ${index + 1}:</strong><br>
+                        <small>
+                            ${problem.id} → ${technique.id} → ${application.id}<br>
+                            ${isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+                        </small>
+                    </div>
+                `;
+            }).join('');
+
+            const score = (correctCount / 8) * 100;
+            let grade = 'D';
+            if (score >= 90) grade = 'A';
+            else if (score >= 80) grade = 'B';
+            else if (score >= 70) grade = 'C';
+
+            document.getElementById('correctCount').textContent = `${correctCount}/8`;
+            document.getElementById('timeDisplay').textContent = document.getElementById('timer').textContent;
+            document.getElementById('gradeDisplay').textContent = grade;
+            document.getElementById('gradeDisplay').className = `grade ${grade}`;
+            document.getElementById('resultsDetail').innerHTML = details;
+            document.getElementById('resultsModal').classList.add('show');
+        }
+
+        // Close results modal
+        function closeResults() {
+            document.getElementById('resultsModal').classList.remove('show');
+        }
+
+        // Reset game
+        function resetGame() {
+            matches = [];
+            selectedCards = {problem: null, technique: null, application: null};
+            startTime = Date.now();
+            document.getElementById('matchCount').textContent = '0';
+            renderCards();
+            renderMatches();
+            closeResults();
+            startTimer();
+            showFeedback('info', 'Game reset! Good luck!');
+        }
+
+        // Timer functions
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // Show feedback
+        function showFeedback(type, message) {
+            const feedback = document.getElementById('feedback');
+            feedback.className = `feedback ${type}`;
+            feedback.textContent = message;
+            setTimeout(() => {
+                feedback.className = 'feedback';
+            }, 3000);
+        }
+
+        // Show hints
+        function showHint(type) {
+            const hintContent = document.getElementById('hintContent');
+            hintContent.classList.add('show');
+
+            const hints = {
+                categories: `
+                    <h4>Understanding Categories:</h4>
+                    <p><strong>Problems (Blue):</strong> Educational challenges that need solving</p>
+                    <p><strong>Techniques (Green):</strong> Analytics methods and approaches</p>
+                    <p><strong>Applications (Orange):</strong> Specific tools or systems that implement techniques</p>
+                    <p><em>Think: Problem → Method → Tool</em></p>
+                `,
+                examples: `
+                    <h4>Example Match:</h4>
+                    <p><strong>Problem:</strong> "Students dropping out" (P1)</p>
+                    <p><strong>Technique:</strong> "Prediction & Classification" (T1)</p>
+                    <p><strong>Application:</strong> "Early warning system with traffic lights" (A1)</p>
+                    <p><em>Why? Predicting dropout risk allows early intervention via alerts!</em></p>
+                `,
+                strategies: `
+                    <h4>Strategy Tips:</h4>
+                    <p>✓ Look for keyword connections (e.g., "forum" → "discourse" → "topic modeling")</p>
+                    <p>✓ Think about the goal of each problem</p>
+                    <p>✓ Match scale (broad problems need broad techniques)</p>
+                    <p>✓ Consider: What would actually solve this problem?</p>
+                `
+            };
+
+            hintContent.innerHTML = hints[type] || '';
+        }
+
+        function toggleHints() {
+            const hintContent = document.getElementById('hintContent');
+            if (hintContent.classList.contains('show')) {
+                hintContent.classList.remove('show');
+            } else {
+                showHint('categories');
+            }
+        }
+
+        // Initialize game on load
+        window.onload = initGame;
+    </script>
+</body>
+</html>
