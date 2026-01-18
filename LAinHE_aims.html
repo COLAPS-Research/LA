@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problems Learning Analytics Address in Higher Education</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .intro {
+            background: #e8f4f8;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+
+        .intro h3 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        .intro p {
+            color: #34495e;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #3498db;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .view-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .view-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #ecf0f1;
+            color: #2c3e50;
+            transition: all 0.3s;
+        }
+
+        .view-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        /* Grid View */
+        .problems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .problem-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 5px solid #3498db;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .problem-card.student { border-left-color: #27ae60; }
+        .problem-card.instructor { border-left-color: #e67e22; }
+        .problem-card.institution { border-left-color: #9b59b6; }
+
+        .problem-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .problem-icon {
+            font-size: 2.5em;
+            min-width: 50px;
+        }
+
+        .problem-title {
+            flex: 1;
+        }
+
+        .problem-title h3 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 1.3em;
+        }
+
+        .problem-number {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            font-weight: normal;
+        }
+
+        .problem-summary {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .problem-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .tag.student { background: #d5f4e6; color: #1e8449; }
+        .tag.instructor { background: #fdebd0; color: #af601a; }
+        .tag.institution { background: #f4ecf7; color: #6c3483; }
+
+        .expand-btn {
+            width: 100%;
+            padding: 8px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .expand-btn:hover {
+            background: #2980b9;
+        }
+
+        /* List View */
+        .problems-list {
+            display: none;
+        }
+
+        .problems-list.active {
+            display: block;
+        }
+
+        .problem-list-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .problem-list-item:hover {
+            background: #e8f4f8;
+            transform: translateX(5px);
+        }
+
+        .problem-list-item.student { border-left-color: #27ae60; }
+        .problem-list-item.instructor { border-left-color: #e67e22; }
+        .problem-list-item.institution { border-left-color: #9b59b6; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #95a5a6;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .modal-section {
+            margin-bottom: 25px;
+        }
+
+        .modal-section h3 {
+            color: #2980b9;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .modal-section h4 {
+            color: #34495e;
+            margin: 15px 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .modal-section p, .modal-section li {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .modal-section ul {
+            margin-left: 25px;
+        }
+
+        .example-box {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+            margin: 15px 0;
+        }
+
+        .example-box strong {
+            color: #d68910;
+        }
+
+        .analytics-solution {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+            margin: 15px 0;
+        }
+
+        .analytics-solution strong {
+            color: #1e8449;
+        }
+
+        .caveat-box {
+            background: #fadbd8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            margin: 15px 0;
+        }
+
+        .caveat-box strong {
+            color: #c0392b;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .framework-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .framework-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .framework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .framework-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .framework-item h4 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .problems-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Problems Learning Analytics Addresses</h1>
+        <p class="subtitle">In Higher Education</p>
+
+        <div class="intro">
+            <h3>The Core Challenge</h3>
+            <p><strong>Traditional higher education operates on assumptions, traditions, and delayed feedback rather than real-time evidence about student learning.</strong></p>
+            <p>Learning analytics promises to shift from: <strong>Assumption → Evidence</strong> | <strong>Delayed → Real-time</strong> | <strong>Invisible → Visible</strong> | <strong>Reactive → Proactive</strong></p>
+        </div>
+
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Core Problems</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Stakeholder Groups</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Implementation Challenges</div>
+            </div>
+        </div>
+
+        <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search problems by keyword...">
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterProblems('all')">All Problems</button>
+            <button class="filter-btn" onclick="filterProblems('student')">Student-Facing</button>
+            <button class="filter-btn" onclick="filterProblems('instructor')">Instructor-Facing</button>
+            <button class="filter-btn" onclick="filterProblems('institution')">Institution-Facing</button>
+        </div>
+
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('grid')">📱 Grid View</button>
+            <button class="view-btn" onclick="switchView('list')">📋 List View</button>
+        </div>
+
+        <div class="problems-grid" id="gridView">
+            <!-- Grid cards will be generated by JavaScript -->
+        </div>
+
+        <div class="problems-list" id="listView">
+            <!-- List items will be generated by JavaScript -->
+        </div>
+
+        <div class="framework-section">
+            <h3>📊 Organizing Framework: The Meta-Problem</h3>
+            <p style="margin-bottom: 20px; line-height: 1.6; color: #555;">All these problems share a common root: <strong>the challenge of teaching at scale while maintaining quality, personalization, and equity.</strong></p>
+            
+            <div class="framework-grid">
+                <div class="framework-item">
+                    <h4>What Analytics Can Do</h4>
+                    <ul style="margin-left: 20px; color: #555;">
+                        <li>Make invisible patterns visible</li>
+                        <li>Identify problems early</li>
+                        <li>Enable scale and personalization</li>
+                        <li>Provide evidence for decisions</li>
+                    </ul>
+                </div>
+                <div class="framework-item">
+                    <h4>What Analytics Can't Do</h4>
+                    <ul style="margin-left: 20px; color: #555;">
+                        <li>Replace pedagogical expertise</li>
+                        <li>Capture joy, creativity, relationships</li>
+                        <li>Automatically improve learning</li>
+                        <li>Eliminate need for human connection</li>
+                    </ul>
+                </div>
+                <div class="framework-item">
+                    <h4>The Critical Question</h4>
+                    <p style="color: #555; font-style: italic;">When is analytics-rich design <strong>worthwhile</strong> (improves learning, supports students) vs. when does it become <strong>surveillance</strong> (monitors behavior, serves institution over learner)?</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="problemModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">×</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const problems = [
+            {
+                id: 1,
+                title: "The Invisibility Problem",
+                category: "student",
+                icon: "👻",
+                summary: "Most learning happens 'in students' heads' and is invisible to instructors",
+                problem: "Learning processes are hidden from instructors, making it impossible to see when students struggle, how they study, or whether they understand concepts until assessments reveal problems—often too late.",
+                invisible: [
+                    "When students struggle with specific concepts",
+                    "How students actually study (vs. how they say they study)",
+                    "Whether students are confused or confident",
+                    "Who's falling behind before it's too late",
+                    "What revision strategies students use",
+                    "Which resources students actually use",
+                    "Patterns of engagement over time"
+                ],
+                solution: "Makes learning processes visible through digital traces, tracks engagement patterns, resource access, time-on-task, reveals misconceptions through error patterns, shows actual behavior vs. self-reported behavior.",
+                example: "Revision tracking pattern: Instead of just seeing final papers, version history reveals whether students do substantive revision or just copy-editing.",
+                caveat: "Risk of making TOO much visible—constant monitoring can feel like surveillance and alter authentic behavior."
+            },
+            {
+                id: 2,
+                title: "The Scale Problem",
+                category: "instructor",
+                icon: "📈",
+                summary: "Teaching methods that work for 20 students fail at 200 or 2,000",
+                problem: "As class sizes grow, individualized attention becomes impossible. Instructors can't have conversations with 200 students, read all discussion posts, provide timely personalized feedback, or adapt instruction to individual needs.",
+                breaksAtScale: [
+                    "Can't have individual conversations with every student",
+                    "Can't read every discussion post thoroughly",
+                    "Can't provide timely, personalized feedback",
+                    "Can't identify struggling students individually",
+                    "Can't adapt instruction to individual needs"
+                ],
+                solution: "Automated pattern detection across large populations, identifies students needing attention (triage), enables personalization at scale (adaptive systems), summarizes discourse patterns (topic modeling), provides dashboards showing class-wide trends.",
+                example: "Forum with 500 posts—can't read all manually, but topic modeling reveals themes automatically.",
+                caveat: "Automation risks reducing learning to what's measurable. Human judgment remains essential even at scale."
+            },
+            {
+                id: 3,
+                title: "The Early Warning Problem",
+                category: "instructor",
+                icon: "⚠️",
+                summary: "By the time we know students are failing, it's often too late to help",
+                problem: "Traditional signals of student struggle come too late—midterm scores at Week 6-8, poor attendance noticed after weeks, withdrawal after prolonged struggling. Early intervention could prevent failure.",
+                lateSigns: [
+                    "Midterm exam scores (Week 6-8)",
+                    "Poor attendance patterns noticed too late",
+                    "Withdrawal after struggling for weeks",
+                    "Failure evident only at course end"
+                ],
+                solution: "Predictive models identify at-risk students early, real-time dashboards show disengagement patterns, early alerts trigger timely interventions, continuous assessment reveals struggles incrementally.",
+                example: "Students dropping out but we don't know why until too late → Early warning systems with traffic light indicators (red/yellow/green).",
+                caveat: "THE FORTUNE TELLING PROBLEM: Predictions can become self-fulfilling prophecies. Successfully intervening makes predictions appear 'wrong'—but that's the desired outcome!"
+            },
+            {
+                id: 4,
+                title: "The Assessment Overload Problem",
+                category: "instructor",
+                icon: "📝",
+                summary: "Meaningful assessment doesn't scale; automated assessment lacks nuance",
+                problem: "Deep, meaningful feedback requires time instructors don't have. Multiple-choice tests scale but miss complex thinking. Can't provide timely feedback on writing at scale or assess collaboration, creativity, metacognition easily.",
+                tension: [
+                    "Deep feedback requires time instructors don't have",
+                    "Multiple-choice tests scale but miss complex thinking",
+                    "Can't provide timely feedback on writing at scale",
+                    "Can't assess collaboration, creativity, metacognition easily"
+                ],
+                solution: "Automated feedback on structured assignments, natural language processing for essay analysis, identifies patterns requiring human attention, frees instructor time for high-value feedback.",
+                example: "Students submit work but we can't assess it all meaningfully → Automated essay feedback on structure/argumentation.",
+                caveat: "Automation risks reducing learning to what's measurable. Assessment should measure what we value, not value only what we can measure."
+            },
+            {
+                id: 5,
+                title: "The One-Size-Fits-All Problem",
+                category: "student",
+                icon: "👥",
+                summary: "Students have diverse needs but often get identical instruction",
+                problem: "Students enter courses with varied backgrounds, prerequisite knowledge, learning paces, and support needs. Traditional instruction treats all students identically despite these differences.",
+                manifestations: [
+                    "Prerequisite gaps (some students ready, others not)",
+                    "Varied learning preferences and strategies",
+                    "Different levels of prior knowledge",
+                    "Individual pacing needs (some need more time/support)"
+                ],
+                solution: "Diagnostic assessment identifies starting points, adaptive pathways route students appropriately, recommendation systems suggest personalized resources, learning trajectories show individual progressions.",
+                example: "Students need different resources but we give everyone the same → Adaptive pathways with remedial/standard/advanced routes.",
+                caveat: "Risk of tracking, stigma, algorithmic bias. Must ensure equity, not reproduce disadvantage. Personalization can create filter bubbles."
+            },
+            {
+                id: 6,
+                title: "The Isolation Problem",
+                category: "student",
+                icon: "🏝️",
+                summary: "Don't know who's isolated, who's dominating, or how social learning unfolds",
+                problem: "Instructors can't see which students are isolated, who dominates discussions, who's silent, how study groups form, or the quality of peer interactions until it's reflected in outcomes.",
+                whatWeMiss: [
+                    "Which students never interact with peers",
+                    "Who dominates discussions (and who's silent)",
+                    "Formation of study groups and communities",
+                    "Quality of peer interactions",
+                    "Social barriers to participation"
+                ],
+                solution: "Social network analysis reveals connection patterns, participation metrics show equity/inequity, identifies isolated students for outreach, maps collaboration patterns.",
+                example: "Some students are isolated, never interact with peers → Network visualization showing student connections.",
+                caveat: "Monitoring social connections raises privacy concerns. Students may perform connection rather than form authentic relationships."
+            },
+            {
+                id: 7,
+                title: "The Feedback Loop Problem",
+                category: "instructor",
+                icon: "🔄",
+                summary: "Instructors lack data to improve their teaching systematically",
+                problem: "Instructors don't know which lecture segments confuse students, which resources get used, whether design changes worked, what predicts success, or which interventions are effective.",
+                unknowns: [
+                    "Which lecture segments confuse students most",
+                    "Which resources actually get used",
+                    "Whether design changes worked",
+                    "What predicts student success in their course",
+                    "Which interventions are effective"
+                ],
+                solution: "A/B testing of teaching methods, analysis of which resources predict success, evaluation of redesigned activities, evidence-based instructional improvement.",
+                example: "Need to know if our new teaching approach actually works → A/B testing and comparative analysis of method effectiveness.",
+                caveat: "Must design proper evaluation. Correlation ≠ causation. Need control groups and proper attribution."
+            },
+            {
+                id: 8,
+                title: "The Transfer Problem",
+                category: "institution",
+                icon: "🌉",
+                summary: "Students learn in courses but don't apply knowledge beyond",
+                problem: "Skills learned in courses often don't transfer to practice. Knowledge remains compartmentalized. Can't predict who will apply learning or identify barriers to transfer.",
+                manifestations: [
+                    "Skills learned but not transferred to practice",
+                    "Knowledge compartmentalized (doesn't integrate)",
+                    "Can't predict who will apply learning",
+                    "Workshop participants don't implement strategies"
+                ],
+                solution: "Track skill application in authentic contexts, identify barriers to transfer through behavioral data, predict transfer likelihood for targeted support, connect learning to practice environments.",
+                example: "Workshop scenario: 60% of participants don't apply skills after training → Analytics predicting and supporting transfer.",
+                caveat: "Transfer is complex—influenced by context, motivation, opportunity. Analytics show correlation, not causation."
+            },
+            {
+                id: 9,
+                title: "The Equity Problem",
+                category: "institution",
+                icon: "⚖️",
+                summary: "Achievement gaps persist but we don't understand why or intervene effectively",
+                problem: "Achievement gaps exist between student groups, but we don't know where gaps emerge, what specific barriers different students face, or whether interventions reduce or widen gaps.",
+                struggles: [
+                    "Which course elements advantage/disadvantage particular groups",
+                    "When gaps emerge (not just that they exist at end)",
+                    "What specific barriers different students face",
+                    "Whether interventions reduce or widen gaps"
+                ],
+                solution: "Disaggregated data by student subgroups, identifies where gaps emerge in learning pathway, tests whether interventions improve equity, reveals systemic barriers in course design.",
+                caveat: "CRITICAL: Analytics can also HARM equity through biased algorithms, deficit narratives, and surveillance of marginalized students. Must center equity in design."
+            },
+            {
+                id: 10,
+                title: "The Metacognition Problem",
+                category: "student",
+                icon: "🪞",
+                summary: "Students lack awareness of their own learning processes",
+                problem: "Students don't know whether they actually understand (overconfidence), which study strategies work for them, when they're struggling vs. productively challenged, or what they need to improve.",
+                studentUnawareness: [
+                    "Whether they actually understand (overconfidence)",
+                    "Which study strategies work for them",
+                    "When they're struggling vs. productively challenged",
+                    "How their effort relates to outcomes",
+                    "What they need to improve"
+                ],
+                solution: "Dashboards showing students their own patterns, confidence calibration (comparing perceived vs. actual understanding), reflection prompts based on behavioral data, self-awareness development through data literacy.",
+                example: "Reflective Practice pattern: Structured prompts with analytics on strategy awareness, confidence calibration, growth patterns.",
+                caveat: "Dashboards can overwhelm or confuse students. Must teach data literacy alongside providing data access."
+            },
+            {
+                id: 11,
+                title: "The Attribution Problem",
+                category: "institution",
+                icon: "🎯",
+                summary: "When teaching interventions fail or succeed, we don't know why",
+                problem: "Multiple variables change simultaneously in teaching. Selection bias affects who participates. Context effects mean interventions work differently in different settings. Delayed effects appear semesters later.",
+                confounds: [
+                    "Multiple variables change simultaneously",
+                    "Selection bias (motivated students self-select)",
+                    "Context effects (works in one course, not another)",
+                    "Delayed effects (impact appears semesters later)"
+                ],
+                solution: "Controlled comparisons (A/B testing), multivariate analysis of contributing factors, longitudinal tracking across semesters, isolates specific design element effects.",
+                example: "Did the redesign work? Need proper analytics to attribute outcomes to specific design changes vs. other factors.",
+                caveat: "Even with analytics, causation is hard to prove. Randomized controlled trials rare in education. Most conclusions correlational."
+            },
+            {
+                id: 12,
+                title: "The Research-Practice Gap Problem",
+                category: "institution",
+                icon: "🔬",
+                summary: "Educational research findings don't translate to teaching practice",
+                problem: "Research contexts differ from teaching contexts. Practitioners lack time/expertise for research. Research results not actionable. No data infrastructure to test principles locally.",
+                disconnect: [
+                    "Research contexts differ from teaching contexts",
+                    "Practitioners lack time/expertise for research",
+                    "Research results not actionable for teachers",
+                    "No data infrastructure to test principles locally"
+                ],
+                solution: "Enables practitioner inquiry with data, tests research principles in local context, builds evidence for what works 'here', supports scholarship of teaching and learning.",
+                example: "Can test whether pedagogical principles from research literature work in YOUR specific context with YOUR students.",
+                caveat: "Practitioner research has methodological limitations. Need support for teacher-researchers. Risk of pseudo-science."
+            }
+        ];
+
+        let currentFilter = 'all';
+        let currentView = 'grid';
+
+        // Initialize
+        function init() {
+            renderProblems();
+            setupSearch();
+        }
+
+        // Render problems
+        function renderProblems() {
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+            
+            // Clear existing content
+            gridView.innerHTML = '';
+            listView.innerHTML = '';
+            
+            // Filter problems
+            const filtered = currentFilter === 'all' 
+                ? problems 
+                : problems.filter(p => p.category === currentFilter);
+            
+            // Render grid cards
+            filtered.forEach(problem => {
+                const card = createProblemCard(problem);
+                gridView.appendChild(card);
+                
+                const listItem = createProblemListItem(problem);
+                listView.appendChild(listItem);
+            });
+        }
+
+        // Create problem card for grid view
+        function createProblemCard(problem) {
+            const card = document.createElement('div');
+            card.className = `problem-card ${problem.category}`;
+            card.setAttribute('data-problem-id', problem.id);
+            card.setAttribute('data-keywords', JSON.stringify([
+                problem.title.toLowerCase(),
+                problem.summary.toLowerCase(),
+                problem.category.toLowerCase()
+            ]));
+            
+            card.innerHTML = `
+                <div class="problem-header">
+                    <div class="problem-icon">${problem.icon}</div>
+                    <div class="problem-title">
+                        <h3>${problem.title}</h3>
+                        <span class="problem-number">Problem #${problem.id}</span>
+                    </div>
+                </div>
+                <div class="problem-summary">${problem.summary}</div>
+                <div class="problem-tags">
+                    <span class="tag ${problem.category}">${capitalize(problem.category)}</span>
+                </div>
+                <button class="expand-btn" onclick="openModal(${problem.id})">Learn More →</button>
+            `;
+            
+            return card;
+        }
+
+        // Create problem list item
+        function createProblemListItem(problem) {
+            const item = document.createElement('div');
+            item.className = `problem-list-item ${problem.category}`;
+            item.setAttribute('data-problem-id', problem.id);
+            item.setAttribute('data-keywords', JSON.stringify([
+                problem.title.toLowerCase(),
+                problem.summary.toLowerCase(),
+                problem.category.toLowerCase()
+            ]));
+            item.onclick = () => openModal(problem.id);
+            
+            item.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 2em;">${problem.icon}</div>
+                    <div style="flex: 1;">
+                        <h3 style="color: #2c3e50; margin-bottom: 5px;">${problem.title}</h3>
+                        <p style="color: #555; margin: 0;">${problem.summary}</p>
+                    </div>
+                    <span class="tag ${problem.category}">${capitalize(problem.category)}</span>
+                </div>
+            `;
+            
+            return item;
+        }
+
+        // Filter problems
+        function filterProblems(category) {
+            currentFilter = category;
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderProblems();
+        }
+
+        // Switch view
+        function switchView(view) {
+            currentView = view;
+            
+            // Update button states
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Toggle views
+            if (view === 'grid') {
+                document.getElementById('gridView').style.display = 'grid';
+                document.getElementById('listView').classList.remove('active');
+            } else {
+                document.getElementById('gridView').style.display = 'none';
+                document.getElementById('listView').classList.add('active');
+            }
+        }
+
+        // Search functionality
+        function setupSearch() {
+            const searchBox = document.getElementById('searchBox');
+            searchBox.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                
+                document.querySelectorAll('.problem-card, .problem-list-item').forEach(item => {
+                    const keywords = JSON.parse(item.getAttribute('data-keywords'));
+                    const matches = keywords.some(keyword => keyword.includes(query));
+                    
+                    if (matches || query === '') {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+            });
+        }
+
+        // Open modal
+        function openModal(problemId) {
+            const problem = problems.find(p => p.id === problemId);
+            if (!problem) return;
+            
+            const modal = document.getElementById('problemModal');
+            const modalBody = document.getElementById('modalBody');
+            
+            let detailsHTML = `
+                <div class="modal-header">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="font-size: 3em;">${problem.icon}</div>
+                        <div>
+                            <h2>${problem.title}</h2>
+                            <span class="tag ${problem.category}">${capitalize(problem.category)}-Facing</span>
+                        </div>
+                    </div>
+                    <p style="color: #555; font-size: 1.1em; line-height: 1.6;">${problem.summary}</p>
+                </div>
+
+                <div class="modal-section">
+                    <h3>The Problem</h3>
+                    <p>${problem.problem}</p>
+            `;
+            
+            // Add specific details based on problem structure
+            if (problem.invisible) {
+                detailsHTML += `
+                    <h4>What Remains Invisible:</h4>
+                    <ul>${problem.invisible.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.breaksAtScale) {
+                detailsHTML += `
+                    <h4>What Breaks at Scale:</h4>
+                    <ul>${problem.breaksAtScale.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.lateSigns) {
+                detailsHTML += `
+                    <h4>Traditional Late Signals:</h4>
+                    <ul>${problem.lateSigns.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.tension) {
+                detailsHTML += `
+                    <h4>The Tension:</h4>
+                    <ul>${problem.tension.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.manifestations) {
+                detailsHTML += `
+                    <h4>Manifestations:</h4>
+                    <ul>${problem.manifestations.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.whatWeMiss) {
+                detailsHTML += `
+                    <h4>What We Miss:</h4>
+                    <ul>${problem.whatWeMiss.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.unknowns) {
+                detailsHTML += `
+                    <h4>What Instructors Don't Know:</h4>
+                    <ul>${problem.unknowns.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.struggles) {
+                detailsHTML += `
+                    <h4>What We Struggle to See:</h4>
+                    <ul>${problem.struggles.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.studentUnawareness) {
+                detailsHTML += `
+                    <h4>What Students Don't Know:</h4>
+                    <ul>${problem.studentUnawareness.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.confounds) {
+                detailsHTML += `
+                    <h4>What Confounds Understanding:</h4>
+                    <ul>${problem.confounds.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            if (problem.disconnect) {
+                detailsHTML += `
+                    <h4>The Disconnect:</h4>
+                    <ul>${problem.disconnect.map(item => `<li>${item}</li>`).join('')}</ul>
+                `;
+            }
+            
+            detailsHTML += `</div>`;
+            
+            // Analytics solution
+            detailsHTML += `
+                <div class="modal-section">
+                    <h3>How Analytics Helps</h3>
+                    <div class="analytics-solution">
+                        <strong>Analytics Approach:</strong><br>
+                        ${problem.solution}
+                    </div>
+                    <div class="example-box">
+                        <strong>Example from Course:</strong><br>
+                        ${problem.example}
+                    </div>
+                </div>
+            `;
+            
+            // Caveat
+            detailsHTML += `
+                <div class="modal-section">
+                    <h3>Critical Caveat</h3>
+                    <div class="caveat-box">
+                        <strong>⚠️ Important Consideration:</strong><br>
+                        ${problem.caveat}
+                    </div>
+                </div>
+            `;
+            
+            
+            modalBody.innerHTML = detailsHTML;
+            modal.classList.add('show');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('problemModal').classList.remove('show');
+        }
+
+        // Utility function
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // Close modal on outside click
+        document.getElementById('problemModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>
