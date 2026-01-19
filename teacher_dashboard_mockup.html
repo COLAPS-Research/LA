@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Analytics Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #141933;
+            --bg-card: #1a1f3a;
+            --accent-cyan: #00f0ff;
+            --accent-pink: #ff006e;
+            --accent-yellow: #ffbe0b;
+            --text-primary: #e8eaf6;
+            --text-secondary: #9fa8da;
+            --border: #2a3154;
+            --success: #00ff88;
+            --warning: #ffbe0b;
+            --danger: #ff006e;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            padding: 2rem;
+            border-bottom: 2px solid var(--accent-cyan);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent-cyan)15, transparent 70%);
+            opacity: 0.1;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.1; }
+            50% { transform: scale(1.2); opacity: 0.2; }
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .controls-bar {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .file-upload {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .file-upload-label {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-pink));
+            color: var(--bg-primary);
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .file-upload-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 240, 255, 0.3);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, button:hover {
+            border-color: var(--accent-cyan);
+            background: var(--bg-secondary);
+        }
+
+        button {
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan)20, transparent);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .kpi-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .kpi-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .kpi-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            background: linear-gradient(135deg, var(--accent-cyan), white);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .kpi-change {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .kpi-change.positive {
+            color: var(--success);
+        }
+
+        .kpi-change.negative {
+            color: var(--danger);
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .chart-container:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 8px 24px rgba(0, 240, 255, 0.1);
+        }
+
+        .chart-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chart-title::before {
+            content: '▸';
+            color: var(--accent-cyan);
+            font-size: 1.5rem;
+        }
+
+        .chart-full-width {
+            grid-column: 1 / -1;
+        }
+
+        .student-table-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            margin-top: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--accent-cyan);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-at-risk {
+            background: rgba(255, 0, 110, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .status-good {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .grade-A { color: var(--success); font-weight: 700; }
+        .grade-B { color: var(--accent-cyan); font-weight: 700; }
+        .grade-C { color: var(--accent-yellow); font-weight: 600; }
+        .grade-D { color: var(--warning); font-weight: 600; }
+        .grade-F { color: var(--danger); font-weight: 700; }
+
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            font-family: 'Space Mono', monospace;
+            color: var(--text-secondary);
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(255, 0, 110, 0.1));
+            border: 1px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .info-banner strong {
+            color: var(--accent-cyan);
+            font-family: 'Space Mono', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .controls-bar {
+                flex-direction: column;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-cyan);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-pink);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1>⚡ Learning Analytics Dashboard</h1>
+            <p class="header-subtitle">Real-time insights into student engagement, performance, and retention</p>
+        </div>
+    </div>
+
+    <div class="controls-bar">
+        <div class="file-upload">
+            <label for="fileInput" class="file-upload-label">
+                📁 Upload Student Data (CSV)
+            </label>
+            <input type="file" id="fileInput" accept=".csv">
+            <span id="fileName" style="margin-left: 1rem; color: var(--text-secondary);"></span>
+        </div>
+        
+        <div class="filter-group">
+            <select id="riskFilter">
+                <option value="all">All Students</option>
+                <option value="at-risk">At-Risk Only</option>
+                <option value="not-at-risk">Not At-Risk</option>
+            </select>
+            
+            <select id="gradeFilter">
+                <option value="all">All Grades</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="F">F</option>
+            </select>
+            
+            <button class="btn-primary" onclick="resetFilters()">Reset Filters</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="info-banner">
+            <strong>📊 Workshop Activity:</strong> Upload the <code>student_data.csv</code> file to explore patterns in student engagement and performance. Use the filters above to segment the data and identify at-risk students. The visualizations update dynamically based on your selections.
+        </div>
+
+        <div id="loadingMessage" class="loading">Loading dashboard</div>
+        
+        <div id="dashboardContent" style="display: none;">
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Students</div>
+                    <div class="kpi-value" id="kpiTotalStudents">0</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-label">At-Risk Students</div>
+                    <div class="kpi-value" id="kpiAtRisk">0</div>
+                    <div class="kpi-change" id="kpiAtRiskPct"></div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-label">Avg. Engagement</div>
+                    <div class="kpi-value" id="kpiEngagement">0</div>
+                    <div class="kpi-change">logins/week</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-label">Completion Rate</div>
+                    <div class="kpi-value" id="kpiCompletion">0%</div>
+                    <div class="kpi-change" id="kpiCompletionCount"></div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Grade Distribution</div>
+                    <div id="gradeChart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Engagement vs Performance</div>
+                    <div id="scatterChart"></div>
+                </div>
+                
+                <div class="chart-container chart-full-width">
+                    <div class="chart-title">Engagement Metrics Heatmap</div>
+                    <div id="heatmapChart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">At-Risk by Engagement Level</div>
+                    <div id="riskChart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Completion by Demographics</div>
+                    <div id="demographicsChart"></div>
+                </div>
+            </div>
+
+            <!-- Student Table -->
+            <div class="student-table-container">
+                <div class="chart-title">Student Details</div>
+                <table id="studentTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Status</th>
+                            <th>Grade</th>
+                            <th>Engagement</th>
+                            <th>Performance</th>
+                            <th>Last Login</th>
+                            <th>Risk Factors</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let studentData = [];
+        let filteredData = [];
+
+        // Plotly configuration
+        const plotConfig = {
+            responsive: true,
+            displayModeBar: false
+        };
+
+        const plotLayout = {
+            paper_bgcolor: '#1a1f3a',
+            plot_bgcolor: '#141933',
+            font: {
+                family: 'IBM Plex Sans, sans-serif',
+                color: '#e8eaf6'
+            },
+            margin: {t: 40, r: 20, b: 40, l: 60}
+        };
+
+        // File upload handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                Papa.parse(file, {
+                    header: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        studentData = results.data.filter(row => row.student_id);
+                        filteredData = [...studentData];
+                        updateDashboard();
+                    }
+                });
+            }
+        });
+
+        // Filter handlers
+        document.getElementById('riskFilter').addEventListener('change', applyFilters);
+        document.getElementById('gradeFilter').addEventListener('change', applyFilters);
+
+        function applyFilters() {
+            const riskFilter = document.getElementById('riskFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+            
+            filteredData = studentData.filter(student => {
+                let matchRisk = true;
+                let matchGrade = true;
+                
+                // Normalize boolean values - handle true, 'true', 'True', 1
+                const isAtRisk = student.at_risk === true || student.at_risk === 'true' || 
+                                student.at_risk === 'True' || student.at_risk === 1;
+                
+                if (riskFilter === 'at-risk') matchRisk = isAtRisk;
+                if (riskFilter === 'not-at-risk') matchRisk = !isAtRisk;
+                
+                if (gradeFilter !== 'all') matchGrade = student.letter_grade === gradeFilter;
+                
+                return matchRisk && matchGrade;
+            });
+            
+            updateDashboard();
+        }
+
+        function resetFilters() {
+            document.getElementById('riskFilter').value = 'all';
+            document.getElementById('gradeFilter').value = 'all';
+            filteredData = [...studentData];
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            if (filteredData.length === 0) return;
+            
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+            
+            updateKPIs();
+            createGradeChart();
+            createScatterChart();
+            createHeatmap();
+            createRiskChart();
+            createDemographicsChart();
+            updateStudentTable();
+        }
+
+        function updateKPIs() {
+            const total = filteredData.length;
+            // Normalize boolean - handle true, 'true', 'True', 1
+            const atRisk = filteredData.filter(s => 
+                s.at_risk === true || s.at_risk === 'true' || s.at_risk === 'True' || s.at_risk === 1
+            ).length;
+            const avgLogins = filteredData.reduce((sum, s) => sum + (s.weekly_logins || 0), 0) / total;
+            const completed = filteredData.filter(s => 
+                s.completed_course === true || s.completed_course === 'true' || s.completed_course === 'True' || s.completed_course === 1
+            ).length;
+            
+            document.getElementById('kpiTotalStudents').textContent = total;
+            document.getElementById('kpiAtRisk').textContent = atRisk;
+            document.getElementById('kpiAtRiskPct').innerHTML = `<span class="${atRisk/total > 0.4 ? 'negative' : 'positive'}">${(atRisk/total*100).toFixed(1)}% of cohort</span>`;
+            document.getElementById('kpiEngagement').textContent = avgLogins.toFixed(1);
+            document.getElementById('kpiCompletion').textContent = `${(completed/total*100).toFixed(1)}%`;
+            document.getElementById('kpiCompletionCount').textContent = `${completed} of ${total} students`;
+        }
+
+        function createGradeChart() {
+            const grades = ['A', 'B', 'C', 'D', 'F'];
+            const counts = grades.map(grade => 
+                filteredData.filter(s => s.letter_grade === grade).length
+            );
+            
+            const trace = {
+                x: grades,
+                y: counts,
+                type: 'bar',
+                marker: {
+                    color: ['#00ff88', '#00f0ff', '#ffbe0b', '#ff9500', '#ff006e'],
+                    line: {
+                        color: '#e8eaf6',
+                        width: 1
+                    }
+                },
+                text: counts,
+                textposition: 'outside',
+                textfont: {
+                    family: 'Space Mono, monospace',
+                    size: 14
+                }
+            };
+            
+            const layout = {
+                ...plotLayout,
+                xaxis: {color: '#9fa8da', gridcolor: '#2a3154'},
+                yaxis: {color: '#9fa8da', gridcolor: '#2a3154', title: 'Number of Students'}
+            };
+            
+            Plotly.newPlot('gradeChart', [trace], layout, plotConfig);
+        }
+
+        function createScatterChart() {
+            // Normalize boolean - handle true, 'true', 'True', 1
+            const atRiskStudents = filteredData.filter(s => 
+                s.at_risk === true || s.at_risk === 'true' || s.at_risk === 'True' || s.at_risk === 1
+            );
+            const notAtRisk = filteredData.filter(s => 
+                !(s.at_risk === true || s.at_risk === 'true' || s.at_risk === 'True' || s.at_risk === 1)
+            );
+            
+            const trace1 = {
+                x: notAtRisk.map(s => s.weekly_logins),
+                y: notAtRisk.map(s => s.overall_grade),
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Not At-Risk',
+                marker: {
+                    color: '#00f0ff',
+                    size: 8,
+                    opacity: 0.6,
+                    line: {color: '#e8eaf6', width: 1}
+                }
+            };
+            
+            const trace2 = {
+                x: atRiskStudents.map(s => s.weekly_logins),
+                y: atRiskStudents.map(s => s.overall_grade),
+                mode: 'markers',
+                type: 'scatter',
+                name: 'At-Risk',
+                marker: {
+                    color: '#ff006e',
+                    size: 10,
+                    opacity: 0.7,
+                    symbol: 'diamond',
+                    line: {color: '#e8eaf6', width: 1}
+                }
+            };
+            
+            const layout = {
+                ...plotLayout,
+                xaxis: {color: '#9fa8da', gridcolor: '#2a3154', title: 'Weekly Logins'},
+                yaxis: {color: '#9fa8da', gridcolor: '#2a3154', title: 'Overall Grade'},
+                showlegend: true,
+                legend: {
+                    bgcolor: '#141933',
+                    bordercolor: '#2a3154',
+                    borderwidth: 1
+                }
+            };
+            
+            Plotly.newPlot('scatterChart', [trace1, trace2], layout, plotConfig);
+        }
+
+        function createHeatmap() {
+            const metrics = ['Weekly\nLogins', 'Forum\nPosts', 'Video\nCompletion', 'Assignment\nOn-Time', 'Weekly\nHours'];
+            const grades = ['A', 'B', 'C', 'D', 'F'];
+            
+            const zValues = grades.map(grade => {
+                const gradeStudents = filteredData.filter(s => s.letter_grade === grade);
+                if (gradeStudents.length === 0) return [0, 0, 0, 0, 0];
+                
+                return [
+                    gradeStudents.reduce((sum, s) => sum + s.weekly_logins, 0) / gradeStudents.length,
+                    gradeStudents.reduce((sum, s) => sum + s.forum_posts, 0) / gradeStudents.length,
+                    gradeStudents.reduce((sum, s) => sum + s.video_completion_pct, 0) / gradeStudents.length,
+                    gradeStudents.reduce((sum, s) => sum + s.assignment_ontime_pct, 0) / gradeStudents.length,
+                    gradeStudents.reduce((sum, s) => sum + s.weekly_hours, 0) / gradeStudents.length
+                ];
+            });
+            
+            const trace = {
+                z: zValues,
+                x: metrics,
+                y: grades,
+                type: 'heatmap',
+                colorscale: [
+                    [0, '#141933'],
+                    [0.5, '#00f0ff'],
+                    [1, '#ff006e']
+                ],
+                colorbar: {
+                    tickfont: {color: '#e8eaf6'},
+                    bgcolor: '#141933',
+                    bordercolor: '#2a3154',
+                    borderwidth: 1
+                }
+            };
+            
+            const layout = {
+                ...plotLayout,
+                xaxis: {color: '#9fa8da', gridcolor: '#2a3154'},
+                yaxis: {color: '#9fa8da', gridcolor: '#2a3154'}
+            };
+            
+            Plotly.newPlot('heatmapChart', [trace], layout, plotConfig);
+        }
+
+        function createRiskChart() {
+            const lowEngagement = filteredData.filter(s => s.weekly_logins < 8);
+            const medEngagement = filteredData.filter(s => s.weekly_logins >= 8 && s.weekly_logins < 15);
+            const highEngagement = filteredData.filter(s => s.weekly_logins >= 15);
+            
+            const categories = ['Low (<8)', 'Medium (8-15)', 'High (15+)'];
+            
+            // Normalize boolean - handle true, 'true', 'True', 1
+            const isAtRisk = (s) => s.at_risk === true || s.at_risk === 'true' || s.at_risk === 'True' || s.at_risk === 1;
+            
+            const atRiskCounts = [
+                lowEngagement.filter(isAtRisk).length,
+                medEngagement.filter(isAtRisk).length,
+                highEngagement.filter(isAtRisk).length
+            ];
+            const notAtRiskCounts = [
+                lowEngagement.filter(s => !isAtRisk(s)).length,
+                medEngagement.filter(s => !isAtRisk(s)).length,
+                highEngagement.filter(s => !isAtRisk(s)).length
+            ];
+            
+            const trace1 = {
+                x: categories,
+                y: atRiskCounts,
+                name: 'At-Risk',
+                type: 'bar',
+                marker: {color: '#ff006e'}
+            };
+            
+            const trace2 = {
+                x: categories,
+                y: notAtRiskCounts,
+                name: 'Not At-Risk',
+                type: 'bar',
+                marker: {color: '#00f0ff'}
+            };
+            
+            const layout = {
+                ...plotLayout,
+                barmode: 'stack',
+                xaxis: {color: '#9fa8da', gridcolor: '#2a3154', title: 'Weekly Logins'},
+                yaxis: {color: '#9fa8da', gridcolor: '#2a3154', title: 'Number of Students'},
+                showlegend: true,
+                legend: {
+                    bgcolor: '#141933',
+                    bordercolor: '#2a3154',
+                    borderwidth: 1
+                }
+            };
+            
+            Plotly.newPlot('riskChart', [trace1, trace2], layout, plotConfig);
+        }
+
+        function createDemographicsChart() {
+            const fullTime = filteredData.filter(s => s.enrollment_status === 'Full-time');
+            const partTime = filteredData.filter(s => s.enrollment_status === 'Part-time');
+            
+            // Normalize boolean - handle true, 'true', 'True', 1
+            const isCompleted = (s) => s.completed_course === true || s.completed_course === 'true' || 
+                                       s.completed_course === 'True' || s.completed_course === 1;
+            
+            const data = [
+                {
+                    x: ['Full-time', 'Part-time'],
+                    y: [
+                        (fullTime.filter(isCompleted).length / fullTime.length * 100),
+                        (partTime.filter(isCompleted).length / partTime.length * 100)
+                    ],
+                    type: 'bar',
+                    name: 'Completion Rate',
+                    marker: {color: '#00ff88'}
+                }
+            ];
+            
+            const layout = {
+                ...plotLayout,
+                xaxis: {color: '#9fa8da', gridcolor: '#2a3154'},
+                yaxis: {color: '#9fa8da', gridcolor: '#2a3154', title: 'Completion Rate (%)', range: [0, 100]}
+            };
+            
+            Plotly.newPlot('demographicsChart', data, layout, plotConfig);
+        }
+
+        function updateStudentTable() {
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = '';
+            
+            // Show first 20 students
+            filteredData.slice(0, 20).forEach(student => {
+                // Normalize boolean - handle true, 'true', 'True', 1
+                const isAtRisk = student.at_risk === true || student.at_risk === 'true' || 
+                                student.at_risk === 'True' || student.at_risk === 1;
+                const riskFactors = [];
+                
+                if (student.weekly_logins < 8) riskFactors.push('Low engagement');
+                if (student.assignment_ontime_pct < 75) riskFactors.push('Late submissions');
+                if (student.overall_grade < 70) riskFactors.push('Low performance');
+                
+                const row = `
+                    <tr>
+                        <td>${student.student_id}</td>
+                        <td><span class="status-badge ${isAtRisk ? 'status-at-risk' : 'status-good'}">
+                            ${isAtRisk ? '⚠️ AT RISK' : '✓ GOOD'}
+                        </span></td>
+                        <td><span class="grade-${student.letter_grade}">${student.letter_grade}</span></td>
+                        <td>${student.weekly_logins} logins/wk</td>
+                        <td>${student.overall_grade.toFixed(1)}%</td>
+                        <td>${student.last_login_days_ago} days ago</td>
+                        <td>${riskFactors.length > 0 ? riskFactors.join(', ') : 'None'}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            
+            if (filteredData.length > 20) {
+                tbody.innerHTML += `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 1.5rem;">
+                            Showing 20 of ${filteredData.length} students
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Load sample data on startup
+        window.addEventListener('load', function() {
+            // Show instructions if no file loaded
+            setTimeout(() => {
+                if (studentData.length === 0) {
+                    document.getElementById('loadingMessage').innerHTML = 
+                        '📂 Upload student_data.csv to get started<br><br><small style="color: var(--text-secondary);">Click the "Upload Student Data" button above</small>';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
